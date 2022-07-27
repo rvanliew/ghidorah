@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using GhidorahBot.Database;
 using Google.Apis.Sheets.v4;
+using GhidorahBot.Validation;
 
 var config = new ConfigurationBuilder()
     .AddJsonFile($"appsettings.json")
@@ -20,7 +21,7 @@ var discordConfig = new DiscordSocketConfig
     GatewayIntents = GatewayIntents.AllUnprivileged,
     LogGatewayIntentWarnings = false,
     AlwaysDownloadUsers = true,
-    LogLevel = LogSeverity.Debug
+    LogLevel = LogSeverity.Debug,
 };
 
 var client = new DiscordSocketClient(discordConfig);
@@ -41,12 +42,12 @@ var interactionCommands = new InteractionService(client, interactionService);
 GoogleCredentialHandler credentials = new GoogleCredentialHandler();
 SheetsService service = credentials.GetCredentials();
 
-
-var roster = new Roster(config, service);
 var search = new Search(config, service);
-var update = new Update(config, service);
+var update = new Update(config, service, search);
 var newentry = new NewEntry(config, service);
 var feedback = new Feedback(config, service);
+var validation = new DataValidation(search);
+var playerQue = new PlayerQueueService();
 
 // Setup your DI container.
 Bootstrapper.Init();
@@ -56,18 +57,19 @@ Bootstrapper.RegisterInstance(interactionCommands);
 Bootstrapper.RegisterType<ICommandHandler, CommandHandler>();
 Bootstrapper.RegisterType<IInteractionHandler, InteractionHandler>();
 Bootstrapper.RegisterInstance(config);
-Bootstrapper.RegisterInstance(roster);
 Bootstrapper.RegisterInstance(search);
 Bootstrapper.RegisterInstance(update);
 Bootstrapper.RegisterInstance(newentry);
 Bootstrapper.RegisterInstance(feedback);
+Bootstrapper.RegisterInstance(validation);
+Bootstrapper.RegisterInstance(playerQue);
 
 await MainAsync();
 
 async Task MainAsync()
 {
-    await Bootstrapper.ServiceProvider.GetRequiredService<ICommandHandler>().InitializeAsync();
-    await Bootstrapper.ServiceProvider.GetRequiredService<IInteractionHandler>().InitializeAsync(roster, search, update, newentry, feedback);
+    await Bootstrapper.ServiceProvider.GetRequiredService<ICommandHandler>().InitializeAsync(search, playerQue);
+    await Bootstrapper.ServiceProvider.GetRequiredService<IInteractionHandler>().InitializeAsync(search, update, newentry, feedback, validation);
 
     client.Ready += async () =>
     {

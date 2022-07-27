@@ -1,5 +1,5 @@
 ﻿using Discord.WebSocket;
-using GhidorahBot.Modals;
+using GhidorahBot.Models;
 using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
 using Microsoft.Extensions.Configuration;
@@ -28,7 +28,7 @@ namespace GhidorahBot.Database
             _service = service;
         }
 
-        public void NewRoster(SocketModal modal, string sheetName, List<Player> playersList)
+        public void NewRoster(SocketModal modal, string sheetName, List<PlayerModel> playersList)
         {
             IncrementId(sheetName);
 
@@ -101,10 +101,10 @@ namespace GhidorahBot.Database
             //
         }
 
-        public (bool, int, List<Player>, List<Player>) SearchForPlayer(SocketModal modal)
+        public (bool, int, List<PlayerModel>, List<PlayerModel>) SearchForPlayer(SocketModal modal)
         {
-            List<Player> _activePlayers = new List<Player>();
-            List<Player> _inactivePlayers = new List<Player>();
+            List<PlayerModel> _activePlayers = new List<PlayerModel>();
+            List<PlayerModel> _inactivePlayers = new List<PlayerModel>();
 
             var range = $"{_playerSheetName}!A2:G";
             var request = _service.Spreadsheets.Values.Get(_config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
@@ -119,13 +119,13 @@ namespace GhidorahBot.Database
             .First(x => x.CustomId == "newroster_addplayer").Value;
 
             List<string> splitStr = player.Split(" ").ToList();
-            List<Player> playerList = new List<Player>();
+            List<PlayerModel> playerList = new List<PlayerModel>();
 
             if (valueRangeResult != null && valueRangeResult.Values.Count > 0)
             {
                 foreach (var row in valueRangeResult.Values)
                 {
-                    playerList.Add(new Player(
+                    playerList.Add(new PlayerModel(
                         row[0].ToString(),
                         row[1].ToString(),
                         row[2].ToString(),
@@ -190,7 +190,7 @@ namespace GhidorahBot.Database
                     }
 
                     if (_id.ToLower().Equals(userInput.ToLower()) && _isActive.Equals("Y") ||
-                        _name.ToLower().Contains(userInput.ToLower()) && _isActive.Equals("Y"))
+                        _name.ToLower().Equals(userInput.ToLower()) && _isActive.Equals("Y"))
                     {
                         _matchFound = true;
                         break;
@@ -203,6 +203,68 @@ namespace GhidorahBot.Database
             }
 
             return (_matchFound, userInput);
+        }
+
+        public (bool, string) SearchRoster(SocketModal modal)
+        {
+            var range = $"{_rosterSheetName}!C2:H";
+            var request = _service.Spreadsheets.Values.Get(_config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
+
+            var response = request.ExecuteAsync();
+            var valueRangeResult = response.Result;
+
+            var modalName = modal.Data.CustomId;
+            var components = modal.Data.Components.ToList();
+
+            var userInput = components
+            .First(x => x.CustomId == "newroster_addplayer").Value;
+
+            List<string> splitStr = userInput.Split(" ").ToList();
+
+            if (valueRangeResult != null && valueRangeResult.Values.Count > 0)
+            {
+                foreach (var row in valueRangeResult.Values)
+                {
+                    switch(row.Count)
+                    {
+                        case 0:
+                            break;
+                        case 1:
+                            break;
+                        case 2:
+                            break;
+                        case 3:
+                            break;
+                        case 4:
+                            break;
+                        case 5:
+                            break;
+                    }
+
+                    if (row.Count <= 1)
+                    {
+                        _id = row[0].ToString() != "" ? _id = row[0].ToString() : _id = "";
+                        _name = string.Empty;
+                    }
+                    else
+                    {
+                        _id = row[0].ToString() != "" ? _id = row[0].ToString() : _id = "";
+                        _name = row[1].ToString() != "" ? _name = row[1].ToString() : _name = "";
+                    }
+
+                    if (_name.ToLower().Equals(userInput.ToLower()))
+                    {
+                        _matchFound = true;
+                        break;
+                    }
+                    else
+                    {
+                        _matchFound = false;
+                    }
+                }
+            }
+
+            return (_matchFound, _name);
         }
 
         private void IncrementId(string sheetName)

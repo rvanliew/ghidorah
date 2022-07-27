@@ -1,4 +1,5 @@
 ﻿using Discord.WebSocket;
+using GhidorahBot.Models;
 using GhidorahBot.Services;
 using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
@@ -19,6 +20,12 @@ namespace GhidorahBot.Database
 
         private SheetsService _service;
         private IConfiguration _config;
+        private static readonly string _vLookUpTeamOne = "=IFERROR(VLOOKUP(C:C, Team!A:B, 2, false), \"\")";
+        private static readonly string _vLookUpTeamTwo = "=IFERROR(VLOOKUP(G:G, Team!A:B, 2, false), \"\")";
+        private static readonly string _vLoopUpPlayer = "=IFERROR(VLOOKUP(C:C, Player!A:B, 2, false), \"\")";
+        private static readonly string _playerSheet = "Player";
+        private static readonly string _teamSheet = "Team";
+        private static readonly string _matchResultSheet = "MatchResult";
 
         public NewEntry(IConfiguration config, SheetsService service)
         {
@@ -48,9 +55,9 @@ namespace GhidorahBot.Database
             }
         }
 
-        public void AddNewTeam(SocketModal modal, string sheetName)
+        public void AddNewTeam(SocketModal modal)
         {
-            IncrementId(sheetName);
+            IncrementId(_teamSheet);
 
             var modalName = modal.Data.CustomId;
             var components = modal.Data.Components.ToList();
@@ -67,10 +74,10 @@ namespace GhidorahBot.Database
             string active = components
             .First(x => x.CustomId == "team_active").Value;
 
-            var range = $"{sheetName}!A:G";
+            var range = $"{_teamSheet}!A:G";
             var valueRange = new ValueRange();
 
-            var objectList = new List<object>() { Id, TeamName, twitter, group.ToUpper(), DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), "", active.ToUpper() };
+            var objectList = new List<object>() { Id, TeamName.ToUpper(), twitter, group.ToUpper(), DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), "", active.ToUpper() };
 
             valueRange.Values = new List<IList<object>> { objectList };
 
@@ -79,9 +86,9 @@ namespace GhidorahBot.Database
             var appendResponse = appendRequest.Execute();
         }
 
-        public void AddNewPlayer(SocketModal modal, string sheetName)
+        public void AddNewPlayer(SocketModal modal)
         {
-            IncrementId(sheetName);
+            IncrementId(_playerSheet);
 
             var modalName = modal.Data.CustomId;
             var components = modal.Data.Components.ToList();
@@ -98,7 +105,7 @@ namespace GhidorahBot.Database
             string active = components
             .First(x => x.CustomId == "player_active").Value;
 
-            var range = $"{sheetName}!A:G";
+            var range = $"{_playerSheet}!A:G";
             var valueRange = new ValueRange();
 
             var objectList = new List<object>() { Id, ActivisionId, discordName, twitter, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), "", active.ToUpper() };
@@ -110,77 +117,79 @@ namespace GhidorahBot.Database
             var appendResponse = appendRequest.Execute();
         }
 
-        public void AddNewMatchResult(SocketModal modal, string sheetName)
+        public void AddNewMatchResult(TeamModel teamOne, TeamModel teamTwo, string winner, string loser, int teamOneMapsWon, int teamTwoMapsWon, string group)
         {
-            IncrementId(sheetName);
-
-            var modalName = modal.Data.CustomId;
-            var components = modal.Data.Components.ToList();
-
-            Guid = Guid.NewGuid();
-
-            string teamOneName = components
-            .First(x => x.CustomId == "team_1_name").Value;
-
-            string teamOneMapsWon = components
-            .First(x => x.CustomId == "team_1_maps_won").Value;
-
-            string teamTwoName = components
-            .First(x => x.CustomId == "team_2_name").Value;
-
-            string teamTwoMapsWon = components
-            .First(x => x.CustomId == "team_2_maps_won").Value;
-
-            string group = components
-            .First(x => x.CustomId == "group_id").Value;
-
-            var range = $"{sheetName}!A:I";
+            int _rowId = 0;
+            string _winner = string.Empty;
+            string _loser = string.Empty;
+            IncrementId(_matchResultSheet);  
+            var range = $"{_matchResultSheet}!A:N";
             var valueRange = new ValueRange();
 
-            var objectList = new List<object>() { Id, Guid, teamOneName, teamOneMapsWon, teamTwoName, teamTwoMapsWon, group.ToUpper(), DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") };
+            Guid = Guid.NewGuid();
+            _rowId = Id + 1;
+
+            if (teamOne.TeamName.ToUpper() == winner.ToUpper())
+            {
+                _winner = $"=IFERROR(D{_rowId}, \"\")";
+                _loser = $"=IFERROR(H{_rowId}, \"\")";
+            }
+            else if (teamTwo.TeamName.ToUpper() == winner.ToUpper())
+            {
+                _winner = $"=IFERROR(H{_rowId}, \"\")";
+                _loser = $"=IFERROR(D{_rowId}, \"\")";
+            }
+
+            var objectList = new List<object>()
+            {
+                Id,
+                Guid,
+                teamOne.Id,
+                _vLookUpTeamOne,
+                teamOneMapsWon,
+                teamTwoMapsWon,
+                teamTwo.Id,
+                _vLookUpTeamTwo,
+                teamTwoMapsWon,
+                teamOneMapsWon,
+                group.ToUpper(),
+                _winner,
+                _loser,
+                DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+            };
 
             valueRange.Values = new List<IList<object>> { objectList };
 
             var appendRequest = _service.Spreadsheets.Values.Append(valueRange, _config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
             appendRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
-            var appendResponse = appendRequest.Execute();
+            var appendResponse = appendRequest.ExecuteAsync();
         }
 
-        public void AddNewPlayerStats(SocketModal modal, string sheetName, string guid, string playerName)
+        public void AddNewPlayerStats(string sheetName, string guid, PlayerModel player, StatsModel stats, MapModeModel mapMode)
         {
             IncrementId(sheetName);
-
-            var modalName = modal.Data.CustomId;
-            var components = modal.Data.Components.ToList();
-
-            string mapMode = components
-            .First(x => x.CustomId == "newstats_mapmode").Value;
-
-            string stats = components
-            .First(x => x.CustomId == "newstats_stats").Value;
-
-            var range = $"{sheetName}!A:K";
+            var range = $"{sheetName}!A:L";
             var valueRange = new ValueRange();
 
-            string[] splitStats = stats.Split(",");
-
-            var objectList = new List<object>() { 
+            var objectList = new List<object>() {
                 Id,
                 guid,
-                playerName,
-                mapMode, 
-                /*kills*/splitStats[0],
-                /*deaths*/splitStats[1],
-                /*hilltime*/splitStats[2],
-                /*bombsplanted*/splitStats[3],
-                /*objkills*/splitStats[4],
+                player.Id,
+                _vLoopUpPlayer,
+                mapMode.Map,
+                mapMode.Mode,
+                stats.Kills,
+                stats.Deaths,
+                stats.HillTime,
+                stats.BombsPlanted,
+                stats.ObjKills,
                 DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") };
 
             valueRange.Values = new List<IList<object>> { objectList };
 
             var appendRequest = _service.Spreadsheets.Values.Append(valueRange, _config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
             appendRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
-            var appendResponse = appendRequest.Execute();
+            var appendResponse = appendRequest.ExecuteAsync();
         }
     }
 }

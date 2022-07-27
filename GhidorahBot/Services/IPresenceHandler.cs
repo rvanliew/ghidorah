@@ -1,4 +1,4 @@
-﻿using GhidorahBot.Database;
+﻿using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace GhidorahBot.Services
 {
-    public interface ICommandHandler
+    public interface IPresenceHandler
     {
-        Task InitializeAsync(Search search, PlayerQueueService playerQueue);
+        Task InitializeAsync();
     }
 }

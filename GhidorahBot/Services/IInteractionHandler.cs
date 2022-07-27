@@ -1,4 +1,5 @@
 ﻿using GhidorahBot.Database;
+using GhidorahBot.Validation;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -11,10 +12,10 @@ namespace GhidorahBot.Services
     public interface IInteractionHandler
     {
         Task InitializeAsync(
-            Roster roster,
             Search search,
             Update editDatabase,
             NewEntry newDatabase,
-            Feedback feedback);
+            Feedback feedback,
+            DataValidation validation);
     }
 }

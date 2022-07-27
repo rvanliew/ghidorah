@@ -3,7 +3,9 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using GhidorahBot.Common;
+using GhidorahBot.Database;
 using GhidorahBot.Init;
+using GhidorahBot.Modules;
 
 namespace GhidorahBot.Services
 {
@@ -12,14 +14,21 @@ namespace GhidorahBot.Services
         private readonly DiscordSocketClient _client;
         private readonly CommandService _commands;
 
+        private Search _search { get; set; }
+        private PlayerQueueService _playerQueue { get; set; }
+
         public CommandHandler(DiscordSocketClient client, CommandService commands)
         {
             _client = client;
             _commands = commands;
         }
 
-        public async Task InitializeAsync()
+        public async Task InitializeAsync(Search search, PlayerQueueService playerQueueService)
         {
+            _search = search;
+            _playerQueue = playerQueueService;
+
+            var commondCommands = new CommonCommandsModule(_search, _playerQueue);
             // add the public modules that inherit InteractionModuleBase<T> to the InteractionService
             await _commands.AddModulesAsync(Assembly.GetExecutingAssembly(), Bootstrapper.ServiceProvider);
 
