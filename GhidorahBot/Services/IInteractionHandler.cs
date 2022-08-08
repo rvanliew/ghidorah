@@ -12,10 +12,6 @@ namespace GhidorahBot.Services
     public interface IInteractionHandler
     {
         Task InitializeAsync(
-            Search search,
-            Update editDatabase,
-            NewEntry newDatabase,
-            Feedback feedback,
-            DataValidation validation);
+            DataValidation validation, PlayerQueueService playerQueueService);
     }
 }

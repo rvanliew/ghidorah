@@ -46,7 +46,7 @@ var search = new Search(config, service);
 var update = new Update(config, service, search);
 var newentry = new NewEntry(config, service);
 var feedback = new Feedback(config, service);
-var validation = new DataValidation(search);
+var validation = new DataValidation(search, update, newentry, feedback, config, service, client);
 var playerQue = new PlayerQueueService();
 
 // Setup your DI container.
@@ -69,13 +69,7 @@ await MainAsync();
 async Task MainAsync()
 {
     await Bootstrapper.ServiceProvider.GetRequiredService<ICommandHandler>().InitializeAsync(search, playerQue);
-    await Bootstrapper.ServiceProvider.GetRequiredService<IInteractionHandler>().InitializeAsync(search, update, newentry, feedback, validation);
-
-    client.Ready += async () =>
-    {
-        await interactionCommands.RegisterCommandsGloballyAsync(true);
-        await Logger.Log(LogSeverity.Info, "BotReady", $"Ghidorah is connected and ready!");
-    };
+    await Bootstrapper.ServiceProvider.GetRequiredService<IInteractionHandler>().InitializeAsync(validation, playerQue);
 
     // Login and connect.
     var token = config.GetRequiredSection("Settings")["DiscordBotToken"];
@@ -87,6 +81,19 @@ async Task MainAsync()
 
     await client.LoginAsync(TokenType.Bot, token);
     await client.StartAsync();
+
+    client.Ready += async () =>
+    {
+        try
+        {
+            await interactionCommands.RegisterCommandsGloballyAsync(true);
+            await Logger.Log(LogSeverity.Info, "Interaction Commands", $"Registered");
+        }
+        catch (Exception ex)
+        {
+            await Logger.Log(LogSeverity.Info, "", $"ERROR: {ex}");
+        }
+    };
 
     // Wait infinitely so your bot actually stays connected.
     await Task.Delay(Timeout.Infinite);

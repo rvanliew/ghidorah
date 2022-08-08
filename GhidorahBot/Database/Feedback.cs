@@ -12,10 +12,10 @@ namespace GhidorahBot.Database
 {
     public class Feedback
     {
+        public string RespondFeedbackMessage = string.Empty;
+
         private SheetsService _service;
         private IConfiguration _config;
-        private string _sheetName = "Feedback";
-        private int _id = 1;
 
         public Feedback(IConfiguration config, SheetsService service)
         {
@@ -23,53 +23,45 @@ namespace GhidorahBot.Database
             _service = service;
         }
 
-        private void IncrementId()
+        public void AddFeedback(SocketModal modal, string feedbackSheetName, int id)
         {
-            var range = $"{_sheetName}!A2:A";
-            var request = _service.Spreadsheets.Values.Get(_config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
-
-            var reponse = request.ExecuteAsync();
-            var requestResponse = reponse.Result;
-
-            if (requestResponse != null && requestResponse.Values != null && requestResponse.Values.Count > 0)
+            try
             {
-                var lastId = requestResponse.Values.Last();
-                _id = Convert.ToInt32(lastId[0]);
-                _id++;
+                var fullDiscordName = $"{modal.User.Username}#{modal.User.Discriminator}";
+
+                var modalName = modal.Data.CustomId;
+                var components = modal.Data.Components.ToList();
+
+                string improvements = components
+                .First(x => x.CustomId == "feedback_improvements").Value;
+
+                string like = components
+                .First(x => x.CustomId == "feedback_like").Value;
+
+                string dislike = components
+                .First(x => x.CustomId == "feedback_dislike").Value;
+
+                string other = components
+                .First(x => x.CustomId == "feedback_other").Value;
+
+                var range = $"{feedbackSheetName}!A:G";
+                var valueRange = new ValueRange();
+
+                var objectList = new List<object>() { id, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), fullDiscordName, improvements, like, dislike, other };
+
+                valueRange.Values = new List<IList<object>> { objectList };
+
+                var appendRequest = _service.Spreadsheets.Values.Append(valueRange, _config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
+                appendRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
+                var appendResponse = appendRequest.Execute();
             }
-        }
-
-        public void AddFeedback(SocketModal modal)
-        {
-            IncrementId();
-
-            var discordName = modal.User.Username;
-
-            var modalName = modal.Data.CustomId;
-            var components = modal.Data.Components.ToList();
-
-            string like = components
-            .First(x => x.CustomId == "feedback_like").Value;
-
-            string dislike = components
-            .First(x => x.CustomId == "feedback_dislike").Value;
-
-            string improvements = components
-            .First(x => x.CustomId == "feedback_improvements").Value;
-
-            string other = components
-            .First(x => x.CustomId == "feedback_other").Value;
-
-            var range = $"{_sheetName}!A:G";
-            var valueRange = new ValueRange();
-
-            var objectList = new List<object>() { _id, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), discordName, like, dislike, improvements, other };
-
-            valueRange.Values = new List<IList<object>> { objectList };
-
-            var appendRequest = _service.Spreadsheets.Values.Append(valueRange, _config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
-            appendRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
-            var appendResponse = appendRequest.Execute();
+            catch (Exception ex)
+            {
+                RespondFeedbackMessage = $"{modal.User.Mention}\r" +
+                    $"An Error has occured while submitting feedback.\r\r" +
+                    $"Exception: {ex}";
+            }
+            
         }
     }
 }

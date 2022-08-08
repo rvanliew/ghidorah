@@ -18,7 +18,11 @@ namespace GhidorahBot.Database
         private static readonly string _teamSheet = "Team";
         private static readonly string _rosterSheet = "Roster";
         private static readonly string _playerStatTotalsSheet = "PlayerStatsTotals";
+        private static readonly string _teamStatTotalsSheet = "TeamStatsTotals";
         private static readonly string _matchResultSheet = "MatchResult";
+        private static readonly string _mapsSheet = "Maps";
+        private static readonly string _gamemodesSheet = "Gamemodes";
+        private static readonly string _discordChnlSheet = "AdminChannel";
 
         public Search(IConfiguration config, SheetsService service)
         {
@@ -42,7 +46,7 @@ namespace GhidorahBot.Database
                 {
                     foreach (var row in valueRangeResult.Values)
                     {
-                        if (row.Count >= 7)
+                        if (row.Count >= 6)
                         {
                             playerList.Add(new PlayerModel(
                                     row[0].ToString(),
@@ -51,7 +55,8 @@ namespace GhidorahBot.Database
                                     row[3].ToString(),
                                     row[4].ToString(),
                                     row[5].ToString(),
-                                    row[6].ToString()));
+                                    row[6].ToString())
+                                );
                         }
                     }
                 }
@@ -69,7 +74,7 @@ namespace GhidorahBot.Database
         {
             List<TeamModel> teamList = new List<TeamModel>();
 
-            var range = $"{_teamSheet}!A2:G";
+            var range = $"{_teamSheet}!A2:I";
             var request = _service.Spreadsheets.Values.Get(_config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
 
             var response = request.ExecuteAsync();
@@ -81,7 +86,7 @@ namespace GhidorahBot.Database
                 {
                     foreach (var row in valueRangeResult.Values)
                     {
-                        if (row.Count >= 7)
+                        if (row.Count >= 8)
                         {
                             teamList.Add(new TeamModel(
                                     row[0].ToString(),
@@ -90,7 +95,10 @@ namespace GhidorahBot.Database
                                     row[3].ToString(),
                                     row[4].ToString(),
                                     row[5].ToString(),
-                                    row[6].ToString()));
+                                    row[6].ToString(),
+                                    row[7].ToString(),
+                                    row[8].ToString())
+                                );
                         }
                     }
                 }
@@ -360,6 +368,45 @@ namespace GhidorahBot.Database
             return playerStatTotalList;
         }
 
+        public List<TeamStatTotalsModel> GetTeamTotalStats()
+        {
+            List<TeamStatTotalsModel> teamStatTotalList = new List<TeamStatTotalsModel>();
+
+            var range = $"{_teamStatTotalsSheet}!A2:N";
+            var request = _service.Spreadsheets.Values.Get(_config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
+
+            var response = request.ExecuteAsync();
+            var valueRangeResult = response.Result;
+
+            try
+            {
+                if (valueRangeResult != null && valueRangeResult.Values.Count > 0)
+                {
+                    foreach (var row in valueRangeResult.Values)
+                    {
+                        teamStatTotalList.Add(new TeamStatTotalsModel(
+                            row[0].ToString(),
+                            row[1].ToString(),
+                            row[7].ToString(),
+                            row[8].ToString(),
+                            row[9].ToString(),
+                            row[10].ToString(),
+                            row[11].ToString(),
+                            row[12].ToString(),
+                            row[13].ToString()
+                            ));
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                teamStatTotalList.Clear();
+                SearchExceptionMsg = $"{ex}";
+            }
+
+            return teamStatTotalList;
+        }
+
         public List<MatchResultModel> GetMatchResultList()
         {
             List<MatchResultModel> matchResultList = new List<MatchResultModel>();
@@ -402,9 +449,104 @@ namespace GhidorahBot.Database
             return matchResultList;
         }
 
-        public List<string> GetGuidList(string sheetName,string definedRange ,string args)
+        public List<MapModel> GetMapList()
         {
-            List<string> guidList = new List<string>();
+            List<MapModel> mapList = new List<MapModel>();
+            var range = $"{_mapsSheet}!A2:B";
+            var request = _service.Spreadsheets.Values.Get(_config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
+            var response = request.ExecuteAsync();
+            var valueRangeResult = response.Result;
+
+            try
+            {
+                if (valueRangeResult != null && valueRangeResult.Values.Count > 0)
+                {
+                    foreach (var row in valueRangeResult.Values)
+                    {
+                        if (row.Count >= 2)
+                        {
+                            mapList.Add(new MapModel(
+                                    row[0].ToString(),
+                                    row[1].ToString()));
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                mapList.Clear();
+                SearchExceptionMsg = $"{ex}";
+            }
+
+            return mapList;
+        }
+
+        public List<GamemodeModel> GetGamemodeList()
+        {
+            List<GamemodeModel> gamemodeList = new List<GamemodeModel>();
+            var range = $"{_gamemodesSheet}!A2:B";
+            var request = _service.Spreadsheets.Values.Get(_config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
+            var response = request.ExecuteAsync();
+            var valueRangeResult = response.Result;
+
+            try
+            {
+                if (valueRangeResult != null && valueRangeResult.Values.Count > 0)
+                {
+                    foreach (var row in valueRangeResult.Values)
+                    {
+                        if (row.Count >= 2)
+                        {
+                            gamemodeList.Add(new GamemodeModel(
+                                    row[0].ToString(),
+                                    row[1].ToString()));
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                gamemodeList.Clear();
+                SearchExceptionMsg = $"{ex}";
+            }
+
+            return gamemodeList;
+        }
+
+        public List<ChannelModel> GetDiscordChannelInfoList()
+        {
+            List<ChannelModel> channelIdList = new List<ChannelModel>();
+            var range = $"{_discordChnlSheet}!A2:C";
+            var request = _service.Spreadsheets.Values.Get(_config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
+            var response = request.ExecuteAsync();
+            var valueRangeResult = response.Result;
+
+            try
+            {
+                if(valueRangeResult != null && valueRangeResult.Values.Count > 0)
+                {
+                    foreach(var row in valueRangeResult.Values)
+                    {
+                        channelIdList.Add(new ChannelModel(
+                            row[0].ToString(),
+                            row[1].ToString(),
+                            row[2].ToString()
+                            ));
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                channelIdList.Clear();
+                SearchExceptionMsg = $"{ex}";
+            }
+
+            return channelIdList;
+        }
+
+        public List<string> GetSingleColumnList(string sheetName,string definedRange ,string args)
+        {
+            List<string> columnList = new List<string>();
             var range = $"{sheetName}!{definedRange}";
             var request = _service.Spreadsheets.Values.Get(_config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
 
@@ -417,7 +559,7 @@ namespace GhidorahBot.Database
                 {
                     foreach (var row in valueRangeResult.Values)
                     {
-                        guidList.Add(row[0].ToString());
+                        columnList.Add(row[0].ToString());
                     }
                 }
             }
@@ -426,69 +568,234 @@ namespace GhidorahBot.Database
                 SearchExceptionMsg = $"Exception: {ex}";
             }
 
-            return guidList;
+            return columnList;
         }
 
         public RosterModel SearchRoster(RosterModel args)
         {
+            SearchExceptionMsg = "";
             var rosterList = GetRosterIdsList();
-            RosterModel searchResult;
+            RosterModel searchResult = null;
             var id = args.Id;
-            searchResult = rosterList.Single(s => s.Id == id);
-
+            try
+            {
+                searchResult = rosterList.Single(s => s.Id == id);
+                return searchResult;
+            }
+            catch (Exception ex)
+            {
+                SearchExceptionMsg = $"Roster Search: Search contains no matching element";
+            }
+            
             return searchResult;
         }
 
         public RosterModel SearchRosterSingle(string args)
         {
+            SearchExceptionMsg = "";
             var rosterList = GetRosterNamesList();
-            RosterModel searchResult;
-            searchResult = rosterList.Single(r => r.TeamName.ToUpper() == args.ToUpper());
+            RosterModel searchResult = null;
+            try
+            {
+                searchResult = rosterList.Single(r => r.TeamName.ToUpper() == args.ToUpper());
+                return searchResult;
+            }
+            catch (Exception ex)
+            {
+                SearchExceptionMsg = $"Search Roster Single: Search contains no matching element";
+            }           
+
+            return searchResult;
+        }
+
+        public RosterModel SearchRosterForPlayer(string args)
+        {
+            SearchExceptionMsg = "";
+            var rosterList = GetRosterNamesList();
+            RosterModel searchResult = null;
+            try
+            {
+                foreach(var roster in rosterList)
+                {
+                    if (args.EqualsAnyOf(
+                        roster.PlayerOne,
+                        roster.PlayerTwo,
+                        roster.PlayerThree,
+                        roster.PlayerFour,
+                        roster.PlayerFive,
+                        roster.PlayerSix))
+                    {
+                        searchResult = roster;
+                        return searchResult;
+                    }
+                }
+            }
+            catch
+            {
+                SearchExceptionMsg = $"Search Roster For Player: Search contains no matching element";
+            }
 
             return searchResult;
         }
 
         public TeamModel SearchTeam(string args)
         {
+            SearchExceptionMsg = "";
             var teamList = GetTeamList();
-            TeamModel searchResult;
-            searchResult = teamList.Single(t => t.TeamName.ToUpper() == args.ToUpper());
+            TeamModel searchResult = null;
+            try
+            {
+                searchResult = teamList.Single(t => t.TeamName.ToUpper() == args.ToUpper());
+                return searchResult;
+            }
+            catch(Exception ex)
+            {
+                SearchExceptionMsg = $"Search contains no matching element";
+            }
 
             return searchResult;
         }
 
         public PlayerModel SearchPlayer(string args)
         {
+            SearchExceptionMsg = "";
             var playerList = GetPlayerList();
-            PlayerModel searchResult;
-            searchResult = playerList.Single(p => p.ActivsionId.ToUpper() == args.ToUpper());
+            PlayerModel searchResult = null;
+            try
+            {
+                searchResult = playerList.Single(p => p.ActivsionId.ToUpper() == args.ToUpper());
+                return searchResult;
+            }
+            catch(Exception ex)
+            {
+                SearchExceptionMsg = $"Player Search: Search contains no matching element";
+            }        
+
+            return searchResult;
+        }
+
+        public MapModel SearchMap(string args)
+        {
+            SearchExceptionMsg = "";
+            var mapList = GetMapList();
+            MapModel searchResult = null;
+            try
+            {
+                searchResult = mapList.Single(m => m.MapName.ToUpper() == args.ToUpper());
+                return searchResult;
+            }
+            catch(Exception ex)
+            {
+                SearchExceptionMsg = $"Map search contains no matching element";
+            }
+
+            return searchResult;
+        }
+
+        public GamemodeModel SearchGamemode(string args)
+        {
+            SearchExceptionMsg = "";
+            var gamemodeList = GetGamemodeList();
+            GamemodeModel searchResult = null;
+            try
+            {
+                searchResult = gamemodeList.Single(g => g.ModeName.ToUpper() == args.ToUpper());
+                return searchResult;
+            }
+            catch (Exception ex)
+            {
+                SearchExceptionMsg = $"Map search contains no matching element";
+            }
 
             return searchResult;
         }
 
         public MatchResultModel SearchMatchResult(string args)
         {
+            SearchExceptionMsg = "";
             var matchResultList = GetMatchResultList();
-            MatchResultModel searchResult;
-            searchResult = matchResultList.Single(m => m.GUID.ToUpper() == args.ToUpper());
-
+            MatchResultModel searchResult = null;
+            try
+            {
+                searchResult = matchResultList.Single(m => m.GUID.ToUpper() == args.ToUpper());
+                return searchResult;
+            }
+            catch (Exception ex)
+            {
+                SearchExceptionMsg = $"Match Result search contains no matching element";
+            }
+            
             return searchResult;
         }
 
         public PlayerStatTotalsModel SearchPlayerStatTotals(string args)
         {
+            SearchExceptionMsg = "";
             var playerTotalStatsList = GetPlayerTotalStats();
-            PlayerStatTotalsModel searchResult;
-            searchResult = playerTotalStatsList.Single(s => s.PlayerName.ToUpper() == args.ToUpper());
+            PlayerStatTotalsModel searchResult = null;
+            try
+            {
+                searchResult = playerTotalStatsList.Single(s => s.PlayerName.ToUpper() == args.ToUpper());
+                return searchResult;
+            }
+            catch (Exception ex)
+            {
+                SearchExceptionMsg = $"Player Stats Totals: Search contains no matching element";
+            }
 
             return searchResult;
         }
 
-        public string SearchGUID(string sheetName, string definedRange, string args)
+        public TeamStatTotalsModel SearchTeamStatTotals(string args)
         {
-            var guidList = GetGuidList(sheetName, definedRange, args);
+            SearchExceptionMsg = "";
+            var teamTotalStatsList = GetTeamTotalStats();
+            TeamStatTotalsModel searchResult = null;
+            try
+            {
+                searchResult = teamTotalStatsList.Single(t => t.TeamName.ToUpper() == args.ToUpper());
+                return searchResult;
+            }
+            catch
+            {
+                SearchExceptionMsg = $"Team Stats Totals: Search contains no matching element";
+            }
+
+            return searchResult;
+        }
+
+        public string SingleColumnSearch(string sheetName, string definedRange, string args)
+        {
             string searchResult = string.Empty;
-            searchResult = guidList.Single(g => g.ToUpper().Equals(args.ToUpper()));
+
+            try
+            {
+                var searchList = GetSingleColumnList(sheetName, definedRange, args);                
+                searchResult = searchList.Single(g => g.ToUpper().Equals(args.ToUpper()));
+                return searchResult;
+            }
+            catch
+            {
+                SearchExceptionMsg = "Search contains no matching element";
+            }
+
+            return searchResult;
+        }
+
+        public ChannelModel SearchChannelTable(ulong guildId)
+        {
+            ChannelModel searchResult = null;
+
+            try
+            {
+                var searchList = GetDiscordChannelInfoList();
+                searchResult = searchList.Single(g => g.GuildId.Equals(guildId.ToString()));
+                return searchResult;
+            }
+            catch(Exception ex)
+            {
+                SearchExceptionMsg = "Guild Id search contains no matching element";
+            }
 
             return searchResult;
         }

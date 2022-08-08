@@ -9,19 +9,10 @@ namespace GhidorahBot.Database
 {
     public class Update
     {
-        public string TeamName;
-        public string ActivisionId;
-        public List<UpdateTeamUserInput> UserTeamInputList = new List<UpdateTeamUserInput>();
-        public List<UpdatePlayerUserInput> UserPlayerInputList = new List<UpdatePlayerUserInput>();
-        private List<UpdateRosterUserInput> UserRosterInputList = new List<UpdateRosterUserInput>();
+        public string UpdateResponseMessage = string.Empty;
 
-        private static readonly string _teamSheet = "Team";
-        private static readonly string _playerSheet = "Player";
-        private static readonly string _rosterSheet = "Roster";
-        private static readonly string _matchResult = "MatchResult";
         private int _rowId;
         private List<RosterModel> _updatedRosterList = new List<RosterModel>();
-
         private IConfiguration _config;
         private SheetsService _service;
         private Search _search { get; set; }
@@ -33,195 +24,177 @@ namespace GhidorahBot.Database
             _search = search;
         }
 
-        public void UpdateTeam(SocketModal modal, string id)
+        /// <summary>
+        /// Update an Existing Team
+        /// </summary>
+        /// <param name="updateList"></param>
+        /// <param name="id"></param>
+        /// <param name="teamSheet"></param>
+        public void UpdateTeam(List<UpdateTeamModel> updateList, string id, string teamSheet)
         {
-            UserTeamInputList.Clear();
-
-            _rowId = Convert.ToInt32(id);
-            _rowId++;
-
-            var modalName = modal.Data.CustomId;
-            var components = modal.Data.Components.ToList();
-
-            string teamName = components
-            .First(x => x.CustomId == "edit_team_Name").Value;
-
-            string twitter = components
-            .First(x => x.CustomId == "edit_team_twitter").Value;
-
-            string group = components
-            .First(x => x.CustomId == "edit_team_group").Value;
-
-            string active = components
-            .First(x => x.CustomId == "edit_team_active").Value;
-
-            UserTeamInputList.Add(new UpdateTeamUserInput(teamName, twitter, group, active));
-
-            foreach (var team in UserTeamInputList)
+            try
             {
-                if (!string.IsNullOrWhiteSpace(team.TeamName))
+                _rowId = Convert.ToInt32(id);
+                _rowId++;
+
+                foreach (var team in updateList)
                 {
-                    UpdateEntry("B", team.TeamName.ToUpper(), _teamSheet);
+                    if (!string.IsNullOrWhiteSpace(team.TeamName))
+                    {
+                        UpdateEntry("B", team.TeamName, teamSheet);
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(team.Twitter))
+                    {
+                        UpdateEntry("C", team.Twitter, teamSheet);
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(team.Group))
+                    {
+                        UpdateEntry("D", team.Group, teamSheet);
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(team.Captain))
+                    {
+                        UpdateEntry("E", team.Captain, teamSheet);
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(team.Manager))
+                    {
+                        UpdateEntry("F", team.Manager, teamSheet);
+                    }
                 }
 
-                if (!string.IsNullOrWhiteSpace(team.Twitter))
-                {
-                    UpdateEntry("C", twitter, _teamSheet);
-                }
-
-                if (!string.IsNullOrWhiteSpace(team.Group))
-                {
-                    UpdateEntry("D", group.ToUpper(), _teamSheet);
-                }
-
-                if (!string.IsNullOrWhiteSpace(team.Active))
-                {
-                    UpdateEntry("G", active.ToUpper(), _teamSheet);
-                }
+                //Update LastUpdated Date
+                UpdateEntry("G", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), teamSheet);
             }
-
-            UpdateLastUpdatedDate(_teamSheet);
+            catch (Exception ex)
+            {
+                UpdateResponseMessage = $"UPDATE TEAM EXCEPTION:\r{ex}";
+            }        
         }
 
-        public void UpdatePlayer(SocketModal modal, string id)
+        /// <summary>
+        /// Update and Exisiting Player
+        /// </summary>
+        /// <param name="updateList"></param>
+        /// <param name="id"></param>
+        /// <param name="playerSheet"></param>
+        public void UpdatePlayer(List<UpdatePlayerModel> updateList, string id, string playerSheet)
         {
-            UserPlayerInputList.Clear();
-            _rowId = Convert.ToInt32(id);
-            _rowId++;
-
-            var modalName = modal.Data.CustomId;
-            var components = modal.Data.Components.ToList();
-
-            string activisionId = components
-            .First(x => x.CustomId == "edit_player_activ_id").Value;
-
-            string discordName = components
-            .First(x => x.CustomId == "edit_player_discord_name").Value;
-
-            string twitter = components
-            .First(x => x.CustomId == "edit_player_twitter").Value;
-
-            string active = components
-            .First(x => x.CustomId == "edit_player_active").Value;
-
-            UserPlayerInputList.Add(new UpdatePlayerUserInput(activisionId, discordName, twitter, active));
-
-            foreach(var player in UserPlayerInputList)
+            try
             {
-                if(!string.IsNullOrWhiteSpace(player.ActivisionId))
+                _rowId = Convert.ToInt32(id);
+                _rowId++;
+
+                foreach (var player in updateList)
                 {
-                    UpdateEntry("B", activisionId, _playerSheet);
+                    if (!string.IsNullOrWhiteSpace(player.ActivisionId))
+                    {
+                        UpdateEntry("B", player.ActivisionId, playerSheet);
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(player.DiscordName))
+                    {
+                        UpdateEntry("C", player.DiscordName, playerSheet);
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(player.Twitter))
+                    {
+                        UpdateEntry("D", player.Twitter, playerSheet);
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(player.Active))
+                    {
+                        UpdateEntry("F", player.Active, playerSheet);
+                    }
                 }
 
-                if (!string.IsNullOrWhiteSpace(player.DiscordName))
-                {
-                    UpdateEntry("C", discordName, _playerSheet);
-                }
-
-                if (!string.IsNullOrWhiteSpace(player.Twitter))
-                {
-                    UpdateEntry("D", twitter, _playerSheet);
-                }
-
-                if (!string.IsNullOrWhiteSpace(player.Active))
-                {
-                    UpdateEntry("G", active.ToUpper(), _playerSheet);
-                }
+                //Update LastUpdated Date
+                UpdateEntry("G", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), playerSheet);
             }
-
-            UpdateLastUpdatedDate(_playerSheet);
+            catch (Exception ex)
+            {
+                UpdateResponseMessage = $"UPDATE TEAM EXCEPTION:\r{ex}";
+            }     
         }
 
-        public void UpdateRoster(List<PlayerModel> removePlayerList, List<PlayerModel> addPlayerList, RosterModel roster)
+        public void UpdateRoster(List<PlayerModel> removePlayerList, List<PlayerModel> addPlayerList, RosterModel roster, string rosterSheet)
         {
-            UserRosterInputList.Clear();
             _updatedRosterList.Clear();
             _rowId = Convert.ToInt32(roster.Id);
             _rowId++;
 
             if(removePlayerList.Any())
             {
-                RemovePlayerFromRoster(removePlayerList, roster);
+                RemovePlayerFromRoster(removePlayerList, roster, rosterSheet);
                 var updatedRoster = _search.SearchRoster(roster);
-                AddPlayerToRoster(addPlayerList, updatedRoster);
+                AddPlayerToRoster(addPlayerList, updatedRoster, rosterSheet);
                 return;
             }
 
             if (addPlayerList.Any())
             {
-                AddPlayerToRoster(addPlayerList, roster);
+                AddPlayerToRoster(addPlayerList, roster, rosterSheet);
             }
 
-            UpdateEntry("P", $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}", _rosterSheet);
+            UpdateEntry("P", $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}", rosterSheet);
         }
 
-        public void UpdateMatchResult(TeamModel teamOne, TeamModel teamTwo, string guid, int teamOneMapsWon, int teamTwoMapsWon, string id)
+        public void UpdateMatchResult(TeamModel teamOne, TeamModel teamTwo, int teamOneMapsWon, int teamTwoMapsWon,
+            string matchResultSheet, string winner, string loser, int id)
         {
             _rowId = Convert.ToInt32(id);
             _rowId++;
 
-            string _winner = string.Empty;
-            string _loser = string.Empty;
-
-            if(teamOneMapsWon >= 3)
-            {
-                _winner = $"=IFERROR(D{_rowId}, \"\")";
-                _loser = $"=IFERROR(H{_rowId}, \"\")";
-            }
-            else if (teamTwoMapsWon >= 3)
-            {
-                _winner = $"=IFERROR(H{_rowId}, \"\")";
-                _loser = $"=IFERROR(D{_rowId}, \"\")";
-            }
-
-            UpdateEntry("C", teamOne.Id, _matchResult);
-            UpdateEntry("E", teamOneMapsWon.ToString(), _matchResult);
-            UpdateEntry("F", teamTwoMapsWon.ToString(), _matchResult);
-            UpdateEntry("G", teamTwo.Id, _matchResult);
-            UpdateEntry("I", teamTwoMapsWon.ToString(), _matchResult);
-            UpdateEntry("J", teamOneMapsWon.ToString(), _matchResult);
-            UpdateEntry("L", _winner, _matchResult);
-            UpdateEntry("M", _loser, _matchResult);
-            UpdateEntry("O", $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}", _matchResult);
+            UpdateEntry("C", teamOne.Id, matchResultSheet);
+            UpdateEntry("E", teamOneMapsWon.ToString(), matchResultSheet);
+            UpdateEntry("F", teamTwoMapsWon.ToString(), matchResultSheet);
+            UpdateEntry("G", teamTwo.Id, matchResultSheet);
+            UpdateEntry("I", teamTwoMapsWon.ToString(), matchResultSheet);
+            UpdateEntry("J", teamOneMapsWon.ToString(), matchResultSheet);
+            UpdateEntry("L", winner, matchResultSheet);
+            UpdateEntry("M", loser, matchResultSheet);
+            UpdateEntry("N", $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}", matchResultSheet);
         }
 
-        private void RemovePlayerFromRoster(List<PlayerModel> removePlayerList, RosterModel roster)
+        private void RemovePlayerFromRoster(List<PlayerModel> removePlayerList, RosterModel roster, string rosterSheet)
         {
             foreach (var rPlayer in removePlayerList)
             {
                 if (rPlayer.Id == roster.PlayerOne)
                 {
-                    UpdateEntry("C", "", _rosterSheet);
+                    UpdateEntry("C", "", rosterSheet);
                 }
 
                 if (rPlayer.Id == roster.PlayerTwo)
                 {
-                    UpdateEntry("E", "", _rosterSheet);
+                    UpdateEntry("E", "", rosterSheet);
                 }
 
                 if (rPlayer.Id == roster.PlayerThree)
                 {
-                    UpdateEntry("G", "", _rosterSheet);
+                    UpdateEntry("G", "", rosterSheet);
                 }
 
                 if (rPlayer.Id == roster.PlayerFour)
                 {
-                    UpdateEntry("I", "", _rosterSheet);
+                    UpdateEntry("I", "", rosterSheet);
                 }
 
                 if (rPlayer.Id == roster.PlayerFive)
                 {
-                    UpdateEntry("K", "", _rosterSheet);
+                    UpdateEntry("K", "", rosterSheet);
                 }
 
                 if (rPlayer.Id == roster.PlayerSix)
                 {
-                    UpdateEntry("M", "", _rosterSheet);
+                    UpdateEntry("M", "", rosterSheet);
                 }
             }
         }
 
-        private void AddPlayerToRoster(List<PlayerModel> addPlayerList, RosterModel roster)
+        private void AddPlayerToRoster(List<PlayerModel> addPlayerList, RosterModel roster, string rosterSheet)
         {
             try
             {
@@ -229,37 +202,37 @@ namespace GhidorahBot.Database
                 {
                     if (string.IsNullOrWhiteSpace(roster.PlayerOne))
                     {
-                        UpdateEntry("C", addPlayerList[0].Id, _rosterSheet);
+                        UpdateEntry("C", addPlayerList[0].Id, rosterSheet);
                         break;
                     }
 
                     if (string.IsNullOrWhiteSpace(roster.PlayerTwo))
                     {
-                        UpdateEntry("E", addPlayerList[1].Id, _rosterSheet);
+                        UpdateEntry("E", addPlayerList[1].Id, rosterSheet);
                         break;
                     }
 
                     if (string.IsNullOrWhiteSpace(roster.PlayerThree))
                     {
-                        UpdateEntry("G", addPlayerList[2].Id, _rosterSheet);
+                        UpdateEntry("G", addPlayerList[2].Id, rosterSheet);
                         break;
                     }
 
                     if (string.IsNullOrWhiteSpace(roster.PlayerFour))
                     {
-                        UpdateEntry("I", addPlayerList[3].Id, _rosterSheet);
+                        UpdateEntry("I", addPlayerList[3].Id, rosterSheet);
                         break;
                     }
 
                     if (string.IsNullOrWhiteSpace(roster.PlayerFive))
                     {
-                        UpdateEntry("K", addPlayerList[4].Id, _rosterSheet);
+                        UpdateEntry("K", addPlayerList[4].Id, rosterSheet);
                         break;
                     }
 
                     if (string.IsNullOrWhiteSpace(roster.PlayerSix))
                     {
-                        UpdateEntry("M", addPlayerList[5].Id, _rosterSheet);
+                        UpdateEntry("M", addPlayerList[5].Id, rosterSheet);
                         break;
                     }
                 }
@@ -272,28 +245,22 @@ namespace GhidorahBot.Database
 
         private void UpdateEntry(string rowLetter, string rowData, string sheetName)
         {
-            var range = $"{sheetName}!{rowLetter}{_rowId}";
-            var valueRange = new ValueRange();
+            try
+            {
+                var range = $"{sheetName}!{rowLetter}{_rowId}";
+                var valueRange = new ValueRange();
 
-            var objectList = new List<object>() { $"{rowData}" };
-            valueRange.Values = new List<IList<object>> { objectList };
+                var objectList = new List<object>() { $"{rowData}" };
+                valueRange.Values = new List<IList<object>> { objectList };
 
-            var updateRequest = _service.Spreadsheets.Values.Update(valueRange, _config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
-            updateRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.USERENTERED;
-            var updateResponse = updateRequest.ExecuteAsync();
-        }
-
-        private void UpdateLastUpdatedDate(string sheetName)
-        {
-            var range = $"{sheetName}!F{_rowId}";
-            var valueRange = new ValueRange();
-
-            var objectList = new List<object>() { $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}" };
-            valueRange.Values = new List<IList<object>> { objectList };
-
-            var updateRequest = _service.Spreadsheets.Values.Update(valueRange, _config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
-            updateRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.USERENTERED;
-            var updateResponse = updateRequest.ExecuteAsync();
+                var updateRequest = _service.Spreadsheets.Values.Update(valueRange, _config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
+                updateRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.USERENTERED;
+                var updateResponse = updateRequest.ExecuteAsync();
+            }
+            catch(Exception ex)
+            {
+                UpdateResponseMessage = $"{ex}";
+            }
         }
     }
 }
