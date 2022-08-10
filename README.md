@@ -12,9 +12,9 @@ You are strictly prohibited to use Ghidorah against the ToS of discord or for il
 We (Ghidorah Bot) own and retain all rights for public available data. We grant you the permission to use this available data for your own needs, but strictly disallow any commercial use. You therefore shall not sell, license or otherwise commercialize the data except if the permission was expressly granted to you.
 
 ## AVAILABILITY
-> Ghidorah is provided as-is. There are no guarantees that it will be available in the future, and its purpose or availability may be changed at any time.
-> User related data may be deleted at any time.
-> Any premium features are not guaranteed. They may change or be revoked at any time.
-> Access to all or specific features of Ghidorah may be revoked, for all or a specific user, at any time.
+* Ghidorah is provided as-is. There are no guarantees that it will be available in the future, and its purpose or availability may be changed at any time.
+* User related data may be deleted at any time.
+* Any premium features are not guaranteed. They may change or be revoked at any time.
+* Access to all or specific features of Ghidorah may be revoked, for all or a specific user, at any time.
 
 Last Updated: 9/8/2022
