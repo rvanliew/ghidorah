@@ -22,13 +22,20 @@ Last Updated: 9/8/2022
 # TUTORIALS
 ## REGISTER DISCORD CHANNEL
 1. Create a new discord text channel
-![new discord channel](https://imgur.com/Vc6vdm6)
+
+![new discord channel](https://i.imgur.com/Vc6vdm6.png)
+
 2. Right click the newly created channel and select "Copy ID"
-![copy id](https://imgur.com/Hee3g6x)
+
+![copy id](https://i.imgur.com/Hee3g6x.png)
+
 3. Use /registerchannel command and paste in the copied Channel ID
-![new discord channel](https://imgur.com/0keLPty)
+
+![register channel](https://i.imgur.com/0keLPty.png)
+
 4. Click "Submit". If no errors occured you will receive the following response
-![new discord channel](https://imgur.com/eL874Bj)
+
+![new discord channel](https://i.imgur.com/eL874Bj.png)
 
 Ghidorah currently supports two types of requests. Caster requests and Admin requests.
 ###### Note: Ghidorah searches through the channel name for keywords such as "admin" and "caster". Please make sure your channel names have these keywords in them.
