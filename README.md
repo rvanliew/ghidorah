@@ -19,6 +19,36 @@ We (Ghidorah Bot) own and retain all rights for public available data. We grant 
 
 Last Updated: 9/8/2022
 
+# INITIAL SETUP
+## DISCORD ROLES
+*NOTE: Discord Role names listed below must be EXACT*
+
+*Elevated means this Role MUST be above others marked Normal)*
+
+![elevated roles](https://i.imgur.com/geapmEs.png)
+
+Discord Role Name | Permissions
+------------------|------------
+League Staff      | Elevated (This role has full control over all bot commands)
+Team Manager      | Normal
+Team Captain      | Normal
+Bots              | Elevated (This role MUST be above Manager and Captain in order for the bot to automatically assign a role to a user)
+
+Team Manager and Team Captain roles have the ability to update the team Roster they are assigned to.
+
+## CREATE YOUR LEAGUE
+*NOTE: You will not have access to these commands until you create the above Discord Roles*
+
+1. Type the slash command /createleague
+
+
+
+2. Create a password for your League (please keep this password somewhere safe and accessible)
+
+
+
+3. 
+
 # TUTORIALS
 ## REGISTER DISCORD CHANNEL
 1. Create a new discord text channel
