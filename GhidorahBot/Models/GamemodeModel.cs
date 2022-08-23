@@ -10,10 +10,16 @@ namespace GhidorahBot.Models
     {
         public string Id { get; set; }
         public string ModeName { get; set; }
-        public GamemodeModel(string id, string modeName)
+        public string Key { get; set; }
+        public string LastUpdated { get; set; }
+        public string LastUpdatedBy { get; set; }
+        public GamemodeModel(string id, string modeName, string key, string lastUpdated, string lastUpdatedBy)
         {
             Id = id;
             ModeName = modeName;
+            Key = key;
+            LastUpdated = lastUpdated;
+            LastUpdatedBy = lastUpdatedBy;
         }
     }
 }

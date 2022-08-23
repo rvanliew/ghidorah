@@ -40,13 +40,74 @@ namespace GhidorahBot.Database
 
                 var appendRequest = _service.Spreadsheets.Values.Append(valueRange, _config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
                 appendRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
-                var appendResponse = appendRequest.Execute();
+                var appendResponse = appendRequest.ExecuteAsync();
+
+                appendResponse.Wait();
             }
             catch(Exception ex)
             {
                 NewEntryResponseMessage = $"ERROR: {ex}";
             }
+        }
+        public void AddNewTeamTotalStatsRow(List<object> objectList, string teamTotalsSheet)
+        {
+            try
+            {
+                var range = $"{teamTotalsSheet}!A:N";
+                var valueRange = new ValueRange();
 
+                valueRange.Values = new List<IList<object>> { objectList };
+
+                var appendRequest = _service.Spreadsheets.Values.Append(valueRange, _config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
+                appendRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
+                var appendResponse = appendRequest.ExecuteAsync();
+
+                appendResponse.Wait();
+            }
+            catch (Exception ex)
+            {
+                NewEntryResponseMessage = $"ERROR: {ex}";
+            }
+        }
+        public void AddNewRosterRow(List<object> objectList, string rosterSheet)
+        {
+            try
+            {
+                var range = $"{rosterSheet}!A:P";
+                var valueRange = new ValueRange();
+
+                valueRange.Values = new List<IList<object>> { objectList };
+
+                var appendRequest = _service.Spreadsheets.Values.Append(valueRange, _config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
+                appendRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
+                var appendResponse = appendRequest.ExecuteAsync();
+
+                appendResponse.Wait();
+            }
+            catch (Exception ex)
+            {
+                NewEntryResponseMessage = $"ERROR: {ex}";
+            }
+        }
+        public void AddNewPlayerTotalStatsRow(List<object> objectList, string playerTotalsSheets)
+        {
+            try
+            {
+                var range = $"{playerTotalsSheets}!A:G";
+                var valueRange = new ValueRange();
+
+                valueRange.Values = new List<IList<object>> { objectList };
+
+                var appendRequest = _service.Spreadsheets.Values.Append(valueRange, _config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
+                appendRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
+                var appendResponse = appendRequest.ExecuteAsync();
+
+                appendResponse.Wait();
+            }
+            catch (Exception ex)
+            {
+                NewEntryResponseMessage = $"ERROR: {ex}";
+            }
         }
 
         /// <summary>
@@ -58,21 +119,22 @@ namespace GhidorahBot.Database
         {
             try
             {
-                var range = $"{playerSheet}!A:G";
+                var range = $"{playerSheet}!A:H";
                 var valueRange = new ValueRange();
 
                 valueRange.Values = new List<IList<object>> { objectList };
 
                 var appendRequest = _service.Spreadsheets.Values.Append(valueRange, _config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
                 appendRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
-                var appendResponse = appendRequest.Execute();
+                var appendResponse = appendRequest.ExecuteAsync();
+
+                appendResponse.Wait();
             }
             catch(Exception ex)
             {
                 NewEntryResponseMessage = $"ERROR: {ex}";
             }
         }
-
         /// <summary>
         /// Create new Match Result
         /// </summary>
@@ -82,7 +144,7 @@ namespace GhidorahBot.Database
         {
             try
             {
-                var range = $"{matchResultSheet}!A:O";
+                var range = $"{matchResultSheet}!A:P";
                 var valueRange = new ValueRange();
 
                 valueRange.Values = new List<IList<object>> { objectList };
@@ -90,18 +152,19 @@ namespace GhidorahBot.Database
                 var appendRequest = _service.Spreadsheets.Values.Append(valueRange, _config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
                 appendRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
                 var appendResponse = appendRequest.ExecuteAsync();
+
+                appendResponse.Wait();
             }
             catch(Exception ex)
             {
                 NewEntryResponseMessage = $"ERROR: {ex}";
             }
         }
-
         public void AddNewPlayerStats(List<object> objectList, string playerStatsSheet)
         {
             try
             {
-                var range = $"{playerStatsSheet}!A:M";
+                var range = $"{playerStatsSheet}!A:N";
                 var valueRange = new ValueRange();
 
                 valueRange.Values = new List<IList<object>> { objectList };
@@ -109,8 +172,50 @@ namespace GhidorahBot.Database
                 var appendRequest = _service.Spreadsheets.Values.Append(valueRange, _config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
                 appendRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
                 var appendResponse = appendRequest.ExecuteAsync();
+
+                appendResponse.Wait();
             }
             catch(Exception ex)
+            {
+                NewEntryResponseMessage = $"ERROR: {ex}";
+            }
+        }
+        public void AddNewLeagueCredentials(List<object> objectList, string leagueCredentialsSheet)
+        {
+            try
+            {
+                var range = $"{leagueCredentialsSheet}!A:E";
+                var valueRange = new ValueRange();
+
+                valueRange.Values = new List<IList<object>> { objectList };
+
+                var appendRequest = _service.Spreadsheets.Values.Append(valueRange, _config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
+                appendRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
+                var appendResponse = appendRequest.ExecuteAsync();
+
+                appendResponse.Wait();
+            }
+            catch (Exception ex)
+            {
+                NewEntryResponseMessage = $"ERROR: {ex}";
+            }
+        }
+        public void CreateSpreadSheetHeaderRow(List<object> headerList, string sheetName, string columnOne, string columnTwo)
+        {
+            try
+            {
+                var range = $"{sheetName}!{columnOne}:{columnTwo}";
+                var valueRange = new ValueRange();
+
+                valueRange.Values = new List<IList<object>> { headerList };
+
+                var appendRequest = _service.Spreadsheets.Values.Append(valueRange, _config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
+                appendRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
+                var appendResponse = appendRequest.ExecuteAsync();
+
+                appendResponse.Wait();
+            }
+            catch (Exception ex)
             {
                 NewEntryResponseMessage = $"ERROR: {ex}";
             }
@@ -119,7 +224,7 @@ namespace GhidorahBot.Database
         {
             try
             {
-                var range = $"{sheetName}!A:C";
+                var range = $"{sheetName}!A:D";
                 var valueRange = new ValueRange();
 
                 valueRange.Values = new List<IList<object>> { objectList };
@@ -127,6 +232,8 @@ namespace GhidorahBot.Database
                 var appendRequest = _service.Spreadsheets.Values.Append(valueRange, _config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
                 appendRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
                 var appendResponse = appendRequest.ExecuteAsync();
+
+                appendResponse.Wait();
             }
             catch(Exception ex)
             {

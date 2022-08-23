@@ -96,109 +96,146 @@ namespace GhidorahBot.Services
 
         private async Task HandleModelAsync(SocketModal modal)
         {
-            switch (modal.Data.CustomId)
+            _validation.ValidateLeagueCreated(_ctx, modal);
+            if(!string.IsNullOrWhiteSpace(_validation.RespondMessage))
             {
-                case "modal_addnewteam":
-                    _validation.ValidateNewTeam(modal, _ctx);
-                    await modal.RespondAsync(_validation.RespondMessage);
-                    break;
-                case "modal_updateteam":
-                    _validation.ValidateUpdateTeam(modal, _ctx);
-                    await modal.RespondAsync(_validation.RespondMessage);
-                    break;
-                case "modal_addnewplayer":
-                    _validation.ValidateNewPlayer(modal, _ctx);
-                    await modal.RespondAsync(_validation.RespondMessage);
-                    break;
-                case "modal_updateplayer":
-                    _validation.ValidateUpdatePlayer(modal, _ctx);
-                    await modal.RespondAsync(_validation.RespondMessage);
-                    break;
-                case "modal_updateRoster":
-                    _validation.ValidateUpdateRoster(modal, _ctx);
-                    await modal.RespondAsync(_validation.RespondMessage);
-                    break;
-                case "modal_newmatchresult":
-                    _validation.ValidateNewMatchResult(modal, _ctx);
-                    await modal.RespondAsync(_validation.RespondMessage);
-                    break;
-                case "modal_updatematchresult":
-                    _validation.ValidateUpdateMatchResult(modal, _ctx);
-                    await modal.RespondAsync(_validation.RespondMessage);
-                    break;
-                case "modal_newplayerstats":
-                    _validation.ValidateNewPlayerStats(modal, _ctx);
-                    await modal.RespondAsync(_validation.RespondMessage);
-                    break;
-                case "modal_updateplayerstats":
-                    //ToDo:
-                    break;
-                case "modal_searchplayer":
-                    _validation.ValidatePlayerSearch(modal);
-                    await modal.RespondAsync(_validation.RespondMessage);
-                    break;
-                case "modal_searchteam":
-                    _validation.ValidateTeamSearch(modal);
-                    await modal.RespondAsync(_validation.RespondMessage);
-                    break;
-                case "modal_searchMatchResult":
-                    _validation.ValidateMatchResultSearch(modal);
-                    await modal.RespondAsync(_validation.RespondMessage);
-                    break;
-                case "modal_feedback":
-                    _validation.ValidateFeedback(modal);
-                    await modal.RespondAsync(_validation.RespondMessage);
-                    break;
-                case "modal_freeagent":
-                    _validation.ValidateFreeAgent(modal);
-                    await modal.RespondAsync(_validation.RespondMessage);
-                    break;
-                case "modal_requestadmin":
-                    var leagueStaffRole = _ctx.Guild.Roles.FirstOrDefault(x => x.Name == "League Staff");
-                    _validation.ValidateAdminRequest(_ctx, modal);
+                await modal.RespondAsync(_validation.RespondMessage);
+                return;
+            }
 
-                    if(_validation.IsAdminRequestValid)
-                    {
-                        var modalName = modal.Data.CustomId;
-                        var components = modal.Data.Components.ToList();
+            _validation.SetGoogleSheetValues(_ctx);
+            if(_validation.IsLeagueCreated)
+            {
+                switch (modal.Data.CustomId)
+                {
+                    case "modal_addnewteam":
+                        _validation.ValidateNewTeam(modal, _ctx);
+                        await modal.RespondAsync(_validation.RespondMessage);
+                        break;
+                    case "modal_updateteam":
+                        _validation.ValidateUpdateTeam(modal, _ctx);
+                        await modal.RespondAsync(_validation.RespondMessage);
+                        break;
+                    case "modal_addnewplayer":
+                        _validation.ValidateNewPlayer(modal, _ctx);
+                        await modal.RespondAsync(_validation.RespondMessage);
+                        break;
+                    case "modal_updateplayer":
+                        _validation.ValidateUpdatePlayer(modal, _ctx);
+                        await modal.RespondAsync(_validation.RespondMessage);
+                        break;
+                    case "modal_rosteraddplayers":
+                        _validation.ValidateAddPlayers(modal, _ctx);
+                        await modal.RespondAsync(_validation.RespondMessage);
+                        break;
+                    case "modal_rosterremoveplayers":
+                        _validation.ValidateRemovePlayers(modal, _ctx);
+                        await modal.RespondAsync(_validation.RespondMessage);
+                        break;
+                    case "modal_newmatchresult":
+                        _validation.ValidateNewMatchResult(modal, _ctx);
+                        await modal.RespondAsync(_validation.RespondMessage);
+                        break;
+                    case "modal_updatematchresult":
+                        _validation.ValidateUpdateMatchResult(modal, _ctx);
+                        await modal.RespondAsync(_validation.RespondMessage);
+                        break;
+                    case "modal_newplayerstats":
+                        _validation.ValidateNewPlayerStats(modal, _ctx);
+                        await modal.RespondAsync(_validation.RespondMessage);
+                        break;
+                    case "modal_updateplayerstats":
+                        _validation.ValidateUpdatePlayerStats(modal, _ctx);
+                        await modal.RespondAsync(_validation.RespondMessage);
+                        break;
+                    case "modal_searchplayer":
+                        _validation.ValidatePlayerSearch(modal);
+                        await modal.RespondAsync(_validation.RespondMessage);
+                        break;
+                    case "modal_searchteam":
+                        _validation.ValidateTeamSearch(modal);
+                        await modal.RespondAsync(_validation.RespondMessage);
+                        break;
+                    case "modal_searchmatchresult":
+                        _validation.ValidateMatchResultSearch(modal);
+                        await modal.RespondAsync(_validation.RespondMessage);
+                        break;
+                    case "modal_feedback":
+                        _validation.ValidateFeedback(modal);
+                        await modal.RespondAsync(_validation.RespondMessage);
+                        break;
+                    case "modal_freeagent":
+                        _validation.ValidateFreeAgent(modal);
+                        await modal.RespondAsync(_validation.RespondMessage);
+                        break;
+                    case "modal_requestadmin":
+                        var leagueStaffRole = _ctx.Guild.Roles.FirstOrDefault(x => x.Name == "League Staff");
+                        _validation.ValidateAdminRequest(_ctx, modal);
 
-                        string issue = components
-                                .First(x => x.CustomId == "admin_issue").Value;
+                        if (_validation.IsAdminRequestValid)
+                        {
+                            var modalName = modal.Data.CustomId;
+                            var components = modal.Data.Components.ToList();
 
-                        var chnl = _client.GetChannel(_validation.ChannelId) as IMessageChannel;
-                        await chnl.SendMessageAsync($"{leagueStaffRole.Mention} New Admin request!\r" +
+                            string issue = components
+                                    .First(x => x.CustomId == "admin_issue").Value;
+
+                            var chnl = _client.GetChannel(_validation.ChannelId) as IMessageChannel;
+                            await chnl.SendMessageAsync($"{leagueStaffRole.Mention} New Admin request!\r" +
+                                $"Submitted by: {modal.User.Username}#{modal.User.Discriminator}\r" +
+                                $"DateTime: {DateTime.Now}\r" +
+                                $"Channel Message was requested from: {modal.Channel.Name}\r" +
+                                $"Message: {issue}");
+
+                            await modal.RespondAsync(_validation.RespondMessage);
+                        }
+                        else
+                        {
+                            //Error
+                            await modal.RespondAsync(_validation.RespondMessage);
+                        }
+                        break;
+                    case "modal_requestcaster":
+                        var casterRole = _ctx.Guild.Roles.FirstOrDefault(x => x.Name == "Caster");
+                        _validation.ValidateCasterRequest(_ctx, modal);
+                        var casterModal = modal.Data.CustomId;
+                        var modalComponents = modal.Data.Components.ToList();
+
+                        string casterRequest = modalComponents
+                            .First(x => x.CustomId == "request_caster").Value;
+
+                        var casterChnl = _client.GetChannel(_validation.ChannelId) as IMessageChannel;
+                        await casterChnl.SendMessageAsync($"{casterRole.Mention} New Caster request!\r" +
                             $"Submitted by: {modal.User.Username}#{modal.User.Discriminator}\r" +
-                            $"DateTime: {DateTime.Now}\r" +
-                            $"Message: {issue}");
+                            $"Request: {casterRequest}");
 
                         await modal.RespondAsync(_validation.RespondMessage);
-                    }
-                    else
-                    {
-                        //Error
+                        break;
+                    case "modal_newscrim":
+                        var scrimModalName = modal.Data.CustomId;
+                        var scrimComponents = modal.Data.Components.ToList();
+
+                        string activisionId = scrimComponents
+                            .First(x => x.CustomId == "scrim_activisionId").Value;
+
+                        string scrimTime = scrimComponents
+                            .First(x => x.CustomId == "scrim_time").Value;
+
+                        string notes = scrimComponents
+                            .First(x => x.CustomId == "scrim_notes").Value;
+
+                        _pq.JoinScrimQueue(modal.User, activisionId, scrimTime, notes, _ctx.Guild.Id, _ctx.Channel.Id);
+                        await modal.RespondAsync(_pq.LocalNotification);
+                        break;
+                    case "modal_registerdiscordchnl":
+                        _validation.ValidateRegisterAdminChnl(_ctx, modal);
                         await modal.RespondAsync(_validation.RespondMessage);
-                    }
-                    break;
-                case "modal_newscrim":
-                    var scrimModalName = modal.Data.CustomId;
-                    var scrimComponents = modal.Data.Components.ToList();
-
-                    string activisionId = scrimComponents
-                        .First(x => x.CustomId == "scrim_activisionId").Value;
-
-                    string scrimTime = scrimComponents
-                        .First(x => x.CustomId == "scrim_time").Value;
-
-                    string notes = scrimComponents
-                        .First(x => x.CustomId == "scrim_notes").Value;
-
-                    _pq.JoinScrimQueue(modal.User, activisionId, scrimTime, notes);
-                    await modal.RespondAsync(_pq.Notification);
-                    break;
-                case "modal_registeradminchnl":
-                    _validation.ValidateRegisterAdminChnl(_ctx, modal);
-                    await modal.RespondAsync(_validation.RespondMessage);
-                    break;
+                        break;
+                }
+            }
+            else
+            {
+                await modal.RespondAsync(_validation.RespondMessage);
             }
         }
     }

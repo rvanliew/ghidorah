@@ -32,22 +32,16 @@ namespace GhidorahBot.Database
                 var modalName = modal.Data.CustomId;
                 var components = modal.Data.Components.ToList();
 
-                string improvements = components
-                .First(x => x.CustomId == "feedback_improvements").Value;
+                string type = components
+                .First(x => x.CustomId == "feedback_feedbacktype").Value;
 
-                string like = components
-                .First(x => x.CustomId == "feedback_like").Value;
+                string feedback = components
+                .First(x => x.CustomId == "feedback").Value;
 
-                string dislike = components
-                .First(x => x.CustomId == "feedback_dislike").Value;
-
-                string other = components
-                .First(x => x.CustomId == "feedback_other").Value;
-
-                var range = $"{feedbackSheetName}!A:G";
+                var range = $"{feedbackSheetName}!A:E";
                 var valueRange = new ValueRange();
 
-                var objectList = new List<object>() { id, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), fullDiscordName, improvements, like, dislike, other };
+                var objectList = new List<object>() { id, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), fullDiscordName, type, feedback};
 
                 valueRange.Values = new List<IList<object>> { objectList };
 

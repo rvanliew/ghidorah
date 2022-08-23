@@ -8,7 +8,6 @@ namespace GhidorahBot.Models
 {
     public class PlayerStatTotalsModel
     {
-        public string Id { get; set; }
         public string PlayerName { get; set; }
         public string Kills { get; set; }
         public string Deaths { get; set; }
@@ -17,8 +16,7 @@ namespace GhidorahBot.Models
         public string ObjKills { get; set; }
         public string KdRatio { get; set; }
 
-        public PlayerStatTotalsModel(
-            string id, 
+        public PlayerStatTotalsModel( 
             string playerName, 
             string kills, 
             string deaths, 
@@ -27,7 +25,6 @@ namespace GhidorahBot.Models
             string objKills, 
             string kdRatio)
         {
-            Id = id;
             PlayerName = playerName;
             Kills = kills;
             Deaths = deaths;

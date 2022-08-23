@@ -18,10 +18,10 @@ var config = new ConfigurationBuilder()
 
 var discordConfig = new DiscordSocketConfig
 {
-    GatewayIntents = GatewayIntents.AllUnprivileged,
+    GatewayIntents = GatewayIntents.All,
     LogGatewayIntentWarnings = false,
     AlwaysDownloadUsers = true,
-    LogLevel = LogSeverity.Debug,
+    LogLevel = LogSeverity.Debug
 };
 
 var client = new DiscordSocketClient(discordConfig);
@@ -46,8 +46,10 @@ var search = new Search(config, service);
 var update = new Update(config, service, search);
 var newentry = new NewEntry(config, service);
 var feedback = new Feedback(config, service);
-var validation = new DataValidation(search, update, newentry, feedback, config, service, client);
-var playerQue = new PlayerQueueService();
+var playerQue = new PlayerQueueService(client);
+var createNewSpreadSheet = new CreateNewSpreadSheet(config, service);
+var createLeague = new CreateCodLeague(createNewSpreadSheet, search, newentry);
+var validation = new DataValidation(search, update, newentry, feedback, config, service, client, createLeague);
 
 // Setup your DI container.
 Bootstrapper.Init();
@@ -61,14 +63,16 @@ Bootstrapper.RegisterInstance(search);
 Bootstrapper.RegisterInstance(update);
 Bootstrapper.RegisterInstance(newentry);
 Bootstrapper.RegisterInstance(feedback);
-Bootstrapper.RegisterInstance(validation);
 Bootstrapper.RegisterInstance(playerQue);
+Bootstrapper.RegisterInstance(createNewSpreadSheet);
+Bootstrapper.RegisterInstance(createLeague);
+Bootstrapper.RegisterInstance(validation);
 
 await MainAsync();
 
 async Task MainAsync()
 {
-    await Bootstrapper.ServiceProvider.GetRequiredService<ICommandHandler>().InitializeAsync(search, playerQue);
+    await Bootstrapper.ServiceProvider.GetRequiredService<ICommandHandler>().InitializeAsync(search, playerQue, validation);
     await Bootstrapper.ServiceProvider.GetRequiredService<IInteractionHandler>().InitializeAsync(validation, playerQue);
 
     // Login and connect.
@@ -77,7 +81,7 @@ async Task MainAsync()
     {
         await Logger.Log(LogSeverity.Error, $"{nameof(Program)} | {nameof(MainAsync)}", "Token is null or empty.");
         return;
-    }  
+    }
 
     await client.LoginAsync(TokenType.Bot, token);
     await client.StartAsync();
@@ -94,6 +98,8 @@ async Task MainAsync()
             await Logger.Log(LogSeverity.Info, "", $"ERROR: {ex}");
         }
     };
+
+    playerQue.ClearQueueHandler();
 
     // Wait infinitely so your bot actually stays connected.
     await Task.Delay(Timeout.Infinite);

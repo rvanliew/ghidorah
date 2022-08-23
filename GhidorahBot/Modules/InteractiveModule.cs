@@ -29,7 +29,7 @@ namespace GhidorahBot.Modules
                 .AddTextInput("Team Twitter", "team_twitter", TextInputStyle.Short, "@ExampleTwitter", 1, 254, false)
                 .AddTextInput("Group", "team_group", TextInputStyle.Short, "A", 1, 1, true)
                 .AddTextInput("Team Captain", "team_captain", TextInputStyle.Short, "(Discord Name)Team Captain", 1, 254, true)
-                .AddTextInput("Team Manager", "team_manager", TextInputStyle.Short, "(Discord Name)Team Manager", 1, 254, true);
+                .AddTextInput("Team Manager", "team_manager", TextInputStyle.Short, "(Discord Name)Team Manager", 1, 254, false);
 
             await Context.Interaction.RespondWithModalAsync(mb.Build());
         }
@@ -116,11 +116,11 @@ namespace GhidorahBot.Modules
             var mb = new ModalBuilder()
                 .WithTitle("New Player Stats")
                 .WithCustomId("modal_newplayerstats")
-                .AddTextInput("Match Guid", "newstats_search_matchguid", TextInputStyle.Short, "EXAMPLE-GUID-1234-ABCD-12345ABCDEF", 1, 254, true)
+                .AddTextInput("Match GUID", "newstats_search_matchguid", TextInputStyle.Short, "EXAMPLE-GUID-1234-ABCD-12345ABCDEF", 1, 254, true)
                 .AddTextInput("Activision Id", "newstats_playername", TextInputStyle.Short, "TestPlayer#123456", 1, 254, true)
-                .AddTextInput("Map and Mode (comma delimited)", "newstats_mapmode", TextInputStyle.Short, "Map,Mode", 1, 254, true)
+                .AddTextInput("Map and Mode (comma separated)", "newstats_mapmode", TextInputStyle.Short, "Map,Mode", 1, 254, true)
                 .AddTextInput("Kills,Deaths,HP_Time,BombsPlanted,ObjKills", "newstats_stats", 
-                TextInputStyle.Short, $"(Comma delimited)kills,deaths,HP_Time(hh:mm:ss),bombsplanted,objkills", 1, 500, true);
+                TextInputStyle.Short, $"20,19,0:01:30,1,18", 1, 500, true);
 
             await Context.Interaction.RespondWithModalAsync(mb.Build());
         }
@@ -130,25 +130,37 @@ namespace GhidorahBot.Modules
             var mb = new ModalBuilder()
                 .WithTitle("Update Player Stats")
                 .WithCustomId("modal_updateplayerstats")
-                .AddTextInput("Id", "updatestats_id", TextInputStyle.Short, "", 1, 254, true)
-                .AddTextInput("Activision Id", "updatestats_playername", TextInputStyle.Short, "TestPlayer#123456", 1, 254, false)
-                .AddTextInput("Map and Mode (comma delimited)", "updatestats_mapmode", TextInputStyle.Short, "Map,Mode", 1, 254, false)
+                .AddTextInput("Match GUID (comma separated)", "updatestats_guid", TextInputStyle.Short, "ExistingGUID,NewGUID", 1, 254, true)
+                .AddTextInput("Activision Id", "updatestats_playername", TextInputStyle.Short, "TestPlayer#123456", 1, 254, true)
+                .AddTextInput("Map and Mode (comma separated)", "updatestats_mapmode", TextInputStyle.Short, "Map,Mode", 1, 254, true)
                 .AddTextInput("Kills,Deaths,HP_Time,BombsPlanted,ObjKills", "updatestats_stats",
-                TextInputStyle.Short, $"(Comma delimited)kills,deaths,HP_Time(hh:mm:ss),bombsplanted,objkills", 1, 500, false);
+                TextInputStyle.Short, $"20,19,0:01:30,1,18", 1, 500, true);
 
             await Context.Interaction.RespondWithModalAsync(mb.Build());
         }
 
         //Roster Commands 
-        [SlashCommand("updateroster", "Update Team Roster", false, RunMode.Async)]
-        public async Task UpdateRoster()
+        [SlashCommand("rosteraddplayers", "Add player(s) to a roster", false, RunMode.Async)]
+        public async Task RosterPlayerAdd()
         {
             var mb = new ModalBuilder()
-                .WithTitle("Update Team Roster")
-                .WithCustomId("modal_updateRoster")
-                .AddTextInput("Search by Team Name or Team Id", "updateroster_search_team_name", TextInputStyle.Short, "Team name or Id", 1, 254, true)
-                .AddTextInput("Remove Player(s) (Comma Delimited)", "updateroster_removeplayer", TextInputStyle.Short, "TestPlayer#123456", 1, 1000, false)
-                .AddTextInput("Add Player(s) (Comma Delimited)", "updateroster_addplayer", TextInputStyle.Short, "TestPlayer#123456", 1, 1000, false);
+                .WithTitle("Add Players to Roster")
+                .WithCustomId("modal_rosteraddplayers")
+                .AddTextInput("Search by Team Name", "rosteradd_teamsearch", TextInputStyle.Short, "Team Name", 1, 254, true)
+                .AddTextInput("Add players (Activision Id) (comma separated)", "rosteradd_addplayers", TextInputStyle.Paragraph, "player1#12345,player2#12345,player3#12345",
+                1, 1000, false);
+
+            await Context.Interaction.RespondWithModalAsync(mb.Build());
+        }
+        [SlashCommand("rosterremoveplayers", "Remove player(s) to a roster", false, RunMode.Async)]
+        public async Task RosterPlayerRemove()
+        {
+            var mb = new ModalBuilder()
+                .WithTitle("Remove Players to Roster")
+                .WithCustomId("modal_rosterremoveplayers")
+                .AddTextInput("Search by Team Name", "rosterremove_teamsearch", TextInputStyle.Short, "Team Name", 1, 254, true)
+                .AddTextInput("Remove players (comma separated)", "rosterremove_addplayers", TextInputStyle.Paragraph, "(Activision Id) player1#12345,player2#12345,player3#12345",
+                1, 1000, false);
 
             await Context.Interaction.RespondWithModalAsync(mb.Build());
         }
@@ -181,7 +193,7 @@ namespace GhidorahBot.Modules
         {
             var mb = new ModalBuilder()
                 .WithTitle("Search for a specific Match Result")
-                .WithCustomId("modal_searchMatchResult")
+                .WithCustomId("modal_searchmatchresult")
                 .AddTextInput("Match Result GUID Search", "search_matchresultguid", TextInputStyle.Short, "EXAMPLE-GUID-1234-ABCD-12345ABCDEF", 1, 254, true);
 
             await Context.Interaction.RespondWithModalAsync(mb.Build());
@@ -193,10 +205,8 @@ namespace GhidorahBot.Modules
             var mb = new ModalBuilder()
                 .WithTitle("Help us improve your experience")
                 .WithCustomId("modal_feedback")
-                .AddTextInput("What improvements would you like to see?", "feedback_improvements", TextInputStyle.Paragraph, "", 1, 4000, false)
-                .AddTextInput("What do you like about the bot?", "feedback_like", TextInputStyle.Paragraph, "", 1, 4000, false)
-                .AddTextInput("What do you dislike about the bot?", "feedback_dislike", TextInputStyle.Paragraph, "", 1, 4000, false)               
-                .AddTextInput("Other", "feedback_other", TextInputStyle.Paragraph, "", 1, 4000, false);
+                .AddTextInput("Feedback Type", "feedback_feedbacktype", TextInputStyle.Short, "Comments, Discord, Feature, Suggestion", 1, 300, true)
+                .AddTextInput("Feedback", "feedback", TextInputStyle.Paragraph, "Please provide any comments or suggestions", 1, 4000, true);
 
             await Context.Interaction.RespondWithModalAsync(mb.Build());
         }
@@ -234,18 +244,28 @@ namespace GhidorahBot.Modules
                 .WithTitle("Create a new team scrim")
                 .WithCustomId("modal_newscrim")
                 .AddTextInput("Your Activision Id", "scrim_activisionId", TextInputStyle.Short, "", 1, 254, true)
-                .AddTextInput("Custom Scrim Date/Time", "scrim_time", TextInputStyle.Short, "The Date/Time you would like to host your scrim", 1, 254, false)
+                .AddTextInput("Custom Scrim Time", "scrim_time", TextInputStyle.Short, "The Time you would like to host your scrim", 1, 254, false)
                 .AddTextInput("Other Notes", "scrim_notes", TextInputStyle.Paragraph, "Additional notes about your scrimmage.\rExample: Hardpoint only", 1, 500, false);
 
             await Context.Interaction.RespondWithModalAsync(mb.Build());
         }
-        [SlashCommand("registeradminchannel", "Register your Admin Channnel", false, RunMode.Async)]
-        public async Task RegisterAdminChannel()
+        [SlashCommand("registerchannel", "Register your Discord Channnel", false, RunMode.Async)]
+        public async Task RegisterDiscordChannel()
         {
             var mb = new ModalBuilder()
-                .WithTitle("Register your admin channel")
-                .WithCustomId("modal_registeradminchnl")
-                .AddTextInput("Admin Channel Id", "admin_chnl", TextInputStyle.Short, "Channel ID", 1, 254, false);
+                .WithTitle("Register your discord channel")
+                .WithCustomId("modal_registerdiscordchnl")
+                .AddTextInput("Discord Channel Id", "discord_chnl", TextInputStyle.Short, "Channel ID", 1, 254, false);
+
+            await Context.Interaction.RespondWithModalAsync(mb.Build());
+        }
+        [SlashCommand("requestcaster", "Request a Caster for your match", false, RunMode.Async)]
+        public async Task RequestCaster()
+        {
+            var mb = new ModalBuilder()
+                .WithTitle("Request a Caster")
+                .WithCustomId("modal_requestcaster")
+                .AddTextInput("Match Date/Time and Match Details", "request_caster", TextInputStyle.Short, "Example: Team1 v Team2 10pm EST", 1, 300, true);
 
             await Context.Interaction.RespondWithModalAsync(mb.Build());
         }

@@ -1,6 +1,7 @@
 ﻿using Discord.WebSocket;
 using GhidorahBot.Models;
 using GhidorahBot.Extensions;
+using GhidorahBot.Global;
 using Google.Apis.Sheets.v4;
 using Microsoft.Extensions.Configuration;
 
@@ -13,28 +14,17 @@ namespace GhidorahBot.Database
         private IConfiguration _config;
         private SheetsService _service;
 
-        //SheetNames
-        private static readonly string _playerSheet = "Player";
-        private static readonly string _teamSheet = "Team";
-        private static readonly string _rosterSheet = "Roster";
-        private static readonly string _playerStatTotalsSheet = "PlayerStatsTotals";
-        private static readonly string _teamStatTotalsSheet = "TeamStatsTotals";
-        private static readonly string _matchResultSheet = "MatchResult";
-        private static readonly string _mapsSheet = "Maps";
-        private static readonly string _gamemodesSheet = "Gamemodes";
-        private static readonly string _discordChnlSheet = "AdminChannel";
-
         public Search(IConfiguration config, SheetsService service)
         {
             _config = config;
             _service = service;
         }
 
-        public List<PlayerModel> GetPlayerList()
+        public List<PlayerModel> GetPlayerList(string guildId)
         {
             List<PlayerModel> playerList = new List<PlayerModel>();
 
-            var range = $"{_playerSheet}!A2:G";
+            var range = $"{guildId}!A2:G";
             var request = _service.Spreadsheets.Values.Get(_config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
 
             var response = request.ExecuteAsync();
@@ -70,11 +60,11 @@ namespace GhidorahBot.Database
             return playerList;
         }
 
-        public List<TeamModel> GetTeamList()
+        public List<TeamModel> GetTeamList(string guildId)
         {
             List<TeamModel> teamList = new List<TeamModel>();
 
-            var range = $"{_teamSheet}!A2:I";
+            var range = $"{guildId}!A2:I";
             var request = _service.Spreadsheets.Values.Get(_config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
 
             var response = request.ExecuteAsync();
@@ -82,7 +72,7 @@ namespace GhidorahBot.Database
 
             try
             {
-                if (valueRangeResult != null && valueRangeResult.Values.Count > 0)
+                if (valueRangeResult != null && valueRangeResult.Values.Count > 0 && valueRangeResult.Values != null)
                 {
                     foreach (var row in valueRangeResult.Values)
                     {
@@ -112,11 +102,11 @@ namespace GhidorahBot.Database
             return teamList;
         }
 
-        public List<RosterModel> GetRosterIdsList()
+        public List<RosterModel> GetRosterIdsList(string guildId)
         {
             List<RosterModel> rosterList = new List<RosterModel>();
 
-            var range = $"{_rosterSheet}!A2:N";
+            var range = $"{guildId}!A2:N";
             var request = _service.Spreadsheets.Values.Get(_config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
 
             var response = request.ExecuteAsync();
@@ -220,11 +210,11 @@ namespace GhidorahBot.Database
             return rosterList;
         }
 
-        public List<RosterModel> GetRosterNamesList()
+        public List<RosterModel> GetRosterNamesList(string guildId)
         {
             List<RosterModel> rosterList = new List<RosterModel>();
 
-            var range = $"{_rosterSheet}!A2:N";
+            var range = $"{guildId}!A2:N";
             var request = _service.Spreadsheets.Values.Get(_config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
 
             var response = request.ExecuteAsync();
@@ -328,11 +318,11 @@ namespace GhidorahBot.Database
             return rosterList;
         }
 
-        public List<PlayerStatTotalsModel> GetPlayerTotalStats()
+        public List<PlayerStatTotalsModel> GetPlayerTotalStats(string guildId)
         {
             List<PlayerStatTotalsModel> playerStatTotalList = new List<PlayerStatTotalsModel>();
 
-            var range = $"{_playerStatTotalsSheet}!A2:H";
+            var range = $"{guildId}!A2:H";
             var request = _service.Spreadsheets.Values.Get(_config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
 
             var response = request.ExecuteAsync();
@@ -353,8 +343,8 @@ namespace GhidorahBot.Database
                                     row[3].ToString(),
                                     row[4].ToString(),
                                     row[5].ToString(),
-                                    row[6].ToString(),
-                                    row[7].ToString()));
+                                    row[6].ToString()
+                                    ));
                         }
                     }
                 }
@@ -368,11 +358,57 @@ namespace GhidorahBot.Database
             return playerStatTotalList;
         }
 
-        public List<TeamStatTotalsModel> GetTeamTotalStats()
+        public List<UpdatePlayerStatsModel> GetPlayerStatsTableData(string guildId)
+        {
+            List<UpdatePlayerStatsModel> playerStatDataList = new List<UpdatePlayerStatsModel>();
+
+            var range = $"{guildId}!A2:N";
+            var request = _service.Spreadsheets.Values.Get(_config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
+
+            var response = request.ExecuteAsync();
+            var valueRangeResult = response.Result;
+
+            try
+            {
+                if (valueRangeResult != null && valueRangeResult.Values.Count > 0)
+                {
+                    foreach (var row in valueRangeResult.Values)
+                    {
+                        if (row.Count >= 7)
+                        {
+                            playerStatDataList.Add(new UpdatePlayerStatsModel(
+                                    row[0].ToString(),
+                                    row[1].ToString(),
+                                    row[2].ToString(),
+                                    row[3].ToString(),
+                                    row[4].ToString(),
+                                    row[5].ToString(),
+                                    row[6].ToString(),
+                                    row[7].ToString(),
+                                    row[8].ToString(),
+                                    row[9].ToString(),
+                                    row[10].ToString(),
+                                    row[11].ToString(),
+                                    row[12].ToString(),
+                                    row[13].ToString()));
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                playerStatDataList.Clear();
+                SearchExceptionMsg = $"{ex}";
+            }
+
+            return playerStatDataList;
+        }
+
+        public List<TeamStatTotalsModel> GetTeamTotalStats(string guildId)
         {
             List<TeamStatTotalsModel> teamStatTotalList = new List<TeamStatTotalsModel>();
 
-            var range = $"{_teamStatTotalsSheet}!A2:N";
+            var range = $"{guildId}!A2:N";
             var request = _service.Spreadsheets.Values.Get(_config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
 
             var response = request.ExecuteAsync();
@@ -387,6 +423,7 @@ namespace GhidorahBot.Database
                         teamStatTotalList.Add(new TeamStatTotalsModel(
                             row[0].ToString(),
                             row[1].ToString(),
+                            row[2].ToString(),
                             row[7].ToString(),
                             row[8].ToString(),
                             row[9].ToString(),
@@ -407,11 +444,11 @@ namespace GhidorahBot.Database
             return teamStatTotalList;
         }
 
-        public List<MatchResultModel> GetMatchResultList()
+        public List<MatchResultModel> GetMatchResultList(string guildId)
         {
             List<MatchResultModel> matchResultList = new List<MatchResultModel>();
 
-            var range = $"{_matchResultSheet}!A2:J";
+            var range = $"{guildId}!A2:J";
             var request = _service.Spreadsheets.Values.Get(_config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
 
             var response = request.ExecuteAsync();
@@ -452,7 +489,7 @@ namespace GhidorahBot.Database
         public List<MapModel> GetMapList()
         {
             List<MapModel> mapList = new List<MapModel>();
-            var range = $"{_mapsSheet}!A2:B";
+            var range = $"{Values.GoogleSheets.maps}!A2:D";
             var request = _service.Spreadsheets.Values.Get(_config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
             var response = request.ExecuteAsync();
             var valueRangeResult = response.Result;
@@ -467,7 +504,9 @@ namespace GhidorahBot.Database
                         {
                             mapList.Add(new MapModel(
                                     row[0].ToString(),
-                                    row[1].ToString()));
+                                    row[1].ToString(),
+                                    row[2].ToString(),
+                                    row[3].ToString()));
                         }
                     }
                 }
@@ -484,7 +523,7 @@ namespace GhidorahBot.Database
         public List<GamemodeModel> GetGamemodeList()
         {
             List<GamemodeModel> gamemodeList = new List<GamemodeModel>();
-            var range = $"{_gamemodesSheet}!A2:B";
+            var range = $"{Values.GoogleSheets.gamemodes}!A2:E";
             var request = _service.Spreadsheets.Values.Get(_config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
             var response = request.ExecuteAsync();
             var valueRangeResult = response.Result;
@@ -499,7 +538,10 @@ namespace GhidorahBot.Database
                         {
                             gamemodeList.Add(new GamemodeModel(
                                     row[0].ToString(),
-                                    row[1].ToString()));
+                                    row[1].ToString(),
+                                    row[2].ToString(),
+                                    row[3].ToString(),
+                                    row[4].ToString()));
                         }
                     }
                 }
@@ -513,10 +555,10 @@ namespace GhidorahBot.Database
             return gamemodeList;
         }
 
-        public List<ChannelModel> GetDiscordChannelInfoList()
+        public List<ChannelModel> GetRegisteredChannelInfoList()
         {
             List<ChannelModel> channelIdList = new List<ChannelModel>();
-            var range = $"{_discordChnlSheet}!A2:C";
+            var range = $"{Values.GoogleSheets.registerChannel}!A2:D";
             var request = _service.Spreadsheets.Values.Get(_config.GetRequiredSection("Settings")["GoogleSheetsId"], range);
             var response = request.ExecuteAsync();
             var valueRangeResult = response.Result;
@@ -530,7 +572,8 @@ namespace GhidorahBot.Database
                         channelIdList.Add(new ChannelModel(
                             row[0].ToString(),
                             row[1].ToString(),
-                            row[2].ToString()
+                            row[2].ToString(),
+                            row[3].ToString()
                             ));
                     }
                 }
@@ -555,7 +598,7 @@ namespace GhidorahBot.Database
 
             try
             {
-                if (valueRangeResult != null && valueRangeResult.Values.Count > 0)
+                if (valueRangeResult != null && valueRangeResult.Values.Count > 0 && valueRangeResult.Values != null)
                 {
                     foreach (var row in valueRangeResult.Values)
                     {
@@ -571,14 +614,14 @@ namespace GhidorahBot.Database
             return columnList;
         }
 
-        public RosterModel SearchRoster(RosterModel args)
+        public RosterModel SearchRoster(RosterModel args, string guildId)
         {
             SearchExceptionMsg = "";
-            var rosterList = GetRosterIdsList();
-            RosterModel searchResult = null;
-            var id = args.Id;
+            var rosterList = GetRosterIdsList(guildId);
+            RosterModel searchResult = null;         
             try
             {
+                var id = args.Id;
                 searchResult = rosterList.Single(s => s.Id == id);
                 return searchResult;
             }
@@ -590,10 +633,10 @@ namespace GhidorahBot.Database
             return searchResult;
         }
 
-        public RosterModel SearchRosterSingle(string args)
+        public RosterModel SearchRosterSingle(string args, string guildId)
         {
             SearchExceptionMsg = "";
-            var rosterList = GetRosterNamesList();
+            var rosterList = GetRosterNamesList(guildId);
             RosterModel searchResult = null;
             try
             {
@@ -608,10 +651,10 @@ namespace GhidorahBot.Database
             return searchResult;
         }
 
-        public RosterModel SearchRosterForPlayer(string args)
+        public RosterModel SearchRosterForPlayer(string args, string guildId)
         {
             SearchExceptionMsg = "";
-            var rosterList = GetRosterNamesList();
+            var rosterList = GetRosterNamesList(guildId);
             RosterModel searchResult = null;
             try
             {
@@ -638,10 +681,10 @@ namespace GhidorahBot.Database
             return searchResult;
         }
 
-        public TeamModel SearchTeam(string args)
+        public TeamModel SearchTeam(string args, string guildId)
         {
             SearchExceptionMsg = "";
-            var teamList = GetTeamList();
+            var teamList = GetTeamList(guildId);
             TeamModel searchResult = null;
             try
             {
@@ -656,10 +699,10 @@ namespace GhidorahBot.Database
             return searchResult;
         }
 
-        public PlayerModel SearchPlayer(string args)
+        public PlayerModel SearchPlayer(string args, string guildId)
         {
             SearchExceptionMsg = "";
-            var playerList = GetPlayerList();
+            var playerList = GetPlayerList(guildId);
             PlayerModel searchResult = null;
             try
             {
@@ -669,7 +712,7 @@ namespace GhidorahBot.Database
             catch(Exception ex)
             {
                 SearchExceptionMsg = $"Player Search: Search contains no matching element";
-            }        
+            }
 
             return searchResult;
         }
@@ -710,10 +753,10 @@ namespace GhidorahBot.Database
             return searchResult;
         }
 
-        public MatchResultModel SearchMatchResult(string args)
+        public MatchResultModel SearchMatchResult(string args, string guildId)
         {
             SearchExceptionMsg = "";
-            var matchResultList = GetMatchResultList();
+            var matchResultList = GetMatchResultList(guildId);
             MatchResultModel searchResult = null;
             try
             {
@@ -728,10 +771,28 @@ namespace GhidorahBot.Database
             return searchResult;
         }
 
-        public PlayerStatTotalsModel SearchPlayerStatTotals(string args)
+        public UpdatePlayerStatsModel SearchPlayerStatsDataTable(string guid, string rowId, string guildId)
         {
             SearchExceptionMsg = "";
-            var playerTotalStatsList = GetPlayerTotalStats();
+            var playerStatsDataTableList = GetPlayerStatsTableData(guildId);
+            UpdatePlayerStatsModel searchResult = null;
+            try
+            {
+                searchResult = playerStatsDataTableList.Single(s => s.Guid.ToUpper() == guid.ToUpper() && s.Id == rowId);
+                return searchResult;
+            }
+            catch
+            {
+                SearchExceptionMsg = "Player Stats Table: Search contains no matching element";
+            }
+
+            return searchResult;
+        }
+
+        public PlayerStatTotalsModel SearchPlayerStatTotals(string args, string guildId)
+        {
+            SearchExceptionMsg = "";
+            var playerTotalStatsList = GetPlayerTotalStats(guildId);
             PlayerStatTotalsModel searchResult = null;
             try
             {
@@ -746,10 +807,10 @@ namespace GhidorahBot.Database
             return searchResult;
         }
 
-        public TeamStatTotalsModel SearchTeamStatTotals(string args)
+        public TeamStatTotalsModel SearchTeamStatTotals(string args, string guildId)
         {
             SearchExceptionMsg = "";
-            var teamTotalStatsList = GetTeamTotalStats();
+            var teamTotalStatsList = GetTeamTotalStats(guildId);
             TeamStatTotalsModel searchResult = null;
             try
             {
@@ -767,10 +828,11 @@ namespace GhidorahBot.Database
         public string SingleColumnSearch(string sheetName, string definedRange, string args)
         {
             string searchResult = string.Empty;
+            SearchExceptionMsg = "";
 
             try
             {
-                var searchList = GetSingleColumnList(sheetName, definedRange, args);                
+                var searchList = GetSingleColumnList(sheetName, definedRange, args);
                 searchResult = searchList.Single(g => g.ToUpper().Equals(args.ToUpper()));
                 return searchResult;
             }
@@ -782,22 +844,32 @@ namespace GhidorahBot.Database
             return searchResult;
         }
 
-        public ChannelModel SearchChannelTable(ulong guildId)
+        public List<ChannelModel> SearchChannelTable(ulong guildId)
         {
-            ChannelModel searchResult = null;
+            SearchExceptionMsg = "";
+            List<ChannelModel> searchResultList = new List<ChannelModel>();
+            string strGuildId = guildId.ToString();
 
             try
             {
-                var searchList = GetDiscordChannelInfoList();
-                searchResult = searchList.Single(g => g.GuildId.Equals(guildId.ToString()));
-                return searchResult;
+                var searchList = GetRegisteredChannelInfoList();
+                foreach(ChannelModel channel in searchList)
+                {
+                    if(channel.GuildId == strGuildId)
+                    {
+                        searchResultList.Add(channel);
+                    }
+                }
+
+                return searchResultList;
             }
             catch(Exception ex)
             {
-                SearchExceptionMsg = "Guild Id search contains no matching element";
+                SearchExceptionMsg = "Guild Id search contains no matching element.\r" +
+                    "Please make sure you have registered an admin channel.";
             }
 
-            return searchResult;
+            return searchResultList;
         }
     }
 }

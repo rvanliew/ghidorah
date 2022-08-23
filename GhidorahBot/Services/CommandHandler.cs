@@ -6,6 +6,7 @@ using GhidorahBot.Common;
 using GhidorahBot.Database;
 using GhidorahBot.Init;
 using GhidorahBot.Modules;
+using GhidorahBot.Validation;
 
 namespace GhidorahBot.Services
 {
@@ -16,6 +17,7 @@ namespace GhidorahBot.Services
 
         private Search _search { get; set; }
         private PlayerQueueService _playerQueue { get; set; }
+        private DataValidation _validation { get; set; }
 
         public CommandHandler(DiscordSocketClient client, CommandService commands)
         {
@@ -23,17 +25,19 @@ namespace GhidorahBot.Services
             _commands = commands;
         }
 
-        public async Task InitializeAsync(Search search, PlayerQueueService playerQueueService)
+        public async Task InitializeAsync(Search search, PlayerQueueService playerQueueService, DataValidation validation)
         {
             _search = search;
             _playerQueue = playerQueueService;
+            _validation = validation;
 
-            var commondCommands = new CommonCommandsModule(_search, _playerQueue);
+            var commondCommands = new CommonCommandsModule(_search, _playerQueue, _client, _validation);
             // add the public modules that inherit InteractionModuleBase<T> to the InteractionService
             await _commands.AddModulesAsync(Assembly.GetExecutingAssembly(), Bootstrapper.ServiceProvider);
-
+        
             // Subscribe a handler to see if a message invokes a command.
             _client.MessageReceived += HandleCommandAsync;
+            
 
             _commands.CommandExecuted += async (optional, context, result) =>
             {

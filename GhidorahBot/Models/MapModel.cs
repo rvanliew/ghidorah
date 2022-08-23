@@ -10,10 +10,14 @@ namespace GhidorahBot.Models
     {
         public string Id { get; set; }
         public string MapName { get; set; }
-        public MapModel(string id, string mapName)
+        public string LastUpdateDt { get; set; }
+        public string LastUpdatedBy { get; set; }
+        public MapModel(string id, string mapName, string lastUpdateDt, string lastUpdatedBy)
         {
             Id = id;
             MapName = mapName;
+            LastUpdateDt = lastUpdateDt;
+            LastUpdatedBy = lastUpdatedBy;
         }
     }
 }

@@ -28,13 +28,5 @@ namespace GhidorahBot.Models
             PlayerFive = playerFive;
             PlayerSix = playerSix;
         }
-
-        //internal void ValidateUserInput(string userInput, string id, string teamName)
-        //{
-        //    if (userInput.ToUpper() == teamName.ToUpper() || userInput == id)
-        //    {
-        //        //
-        //    }
-        //}
     }
 }

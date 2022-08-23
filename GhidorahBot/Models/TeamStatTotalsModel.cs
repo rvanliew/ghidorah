@@ -10,6 +10,7 @@ namespace GhidorahBot.Models
     {
         public string Id { get; set; }
         public string TeamName { get; set; }
+        public string Group { get; set; }
         public string TotalMapsWon { get;set; }
         public string TotalMapsLost { get;set; }
         public string MapWinPercentage { get; set; }
@@ -20,6 +21,7 @@ namespace GhidorahBot.Models
 
         public TeamStatTotalsModel(string id,
             string teamName,
+            string group,
             string totalMapsWon,
             string totalMapsLost,
             string mapWinPercentage,
@@ -30,6 +32,7 @@ namespace GhidorahBot.Models
         {
             Id = id;
             TeamName = teamName;
+            Group = group;
             TotalMapsWon = totalMapsWon;
             TotalMapsLost = totalMapsLost;
             MapWinPercentage = mapWinPercentage;
