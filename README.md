@@ -1,5 +1,5 @@
-# ghidorah
-Ghidorah is a multi-purpose Discord Bot
+# Ghidorah
+Ghidorah is a Discord Bot which centers around the ability to create, manage, and operate a CoD League.
 
 
 # TERMS OF SERVICE
