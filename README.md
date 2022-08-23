@@ -37,17 +37,21 @@ Bots              | Elevated (This role MUST be above Manager and Captain in ord
 Team Manager and Team Captain roles have the ability to update the team Roster they are assigned to.
 
 ## CREATE YOUR LEAGUE
-*NOTE: You will not have access to these commands until you create the above Discord Roles*
+**NOTE: You will not have access to these commands until you create the above Discord Roles**
 
-1. Type the slash command /createleague
+1. Type the command !createleague {password}
 
+**NOTE: This command requires you to create a league password. Password MUST be at least 8 characters long. Please keep this password somewhere safe and accessible. Only Discord Users with the "League Staff" role can use this command.**
 
+![create league command](https://i.imgur.com/wNWzjOU.png)
 
-2. Create a password for your League (please keep this password somewhere safe and accessible)
+League created successfully
 
+![league created](https://i.imgur.com/QaPIIAv.png)
 
+**Only one (1) league can exist per Discord server**
 
-3. 
+![league exists error](https://i.imgur.com/fv3qTIG.png)
 
 # TUTORIALS
 ## REGISTER DISCORD CHANNEL
